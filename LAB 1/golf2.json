@@ -1,0 +1,59 @@
+{
+  "tournament": {
+    "name": "British Open",
+    "year": 2001,
+    "award": 840000,
+    "yardage": 6905,
+    "par": 71,
+    "players": [
+      {
+        "lastname": "Montgomerie",
+        "firstinitial": "C",
+        "score": 1,
+        "hole": 12
+      },
+      {
+        "lastname": "Fulke",
+        "firstinitial": "P",
+        "score": -2,
+        "hole": 3
+      },
+      {
+        "lastname": "Owen",
+        "firstinitial": "G",
+        "score": -1,
+        "hole": 7
+      },
+      {
+        "lastname": "Parnevik",
+        "firstinitial": "J",
+        "score": -3,
+        "hole": "finished"
+      },
+      {
+        "lastname": "Ogilvie",
+        "firstinitial": "J",
+        "score": 1,
+        "hole": "finished"
+      },
+      {
+        "lastname": "Cejka",
+        "firstinitial": "A",
+        "score": -2,
+        "hole": 9
+      },
+      {
+        "lastname": "Romero",
+        "firstinitial": "E",
+        "score": 0,
+        "hole": "finished"
+      },
+      {
+        "lastname": "Fasth",
+        "firstinitial": "N",
+        "score": -4,
+        "hole": 16
+      }
+    ]
+  }
+}

@@ -1,0 +1,527 @@
+{
+	"info": {
+		"_postman_id": "590c21fc-5a6b-4135-8561-e4fa0620b730",
+		"name": "SER 421 - LAB 1",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+	},
+	"item": [
+		{
+			"name": "1.Replication of Browser with Major Headers",
+			"protocolProfileBehavior": {
+				"disabledSystemHeaders": {
+					"accept": true,
+					"host": true,
+					"user-agent": true
+				}
+			},
+			"request": {
+				"auth": {
+					"type": "noauth"
+				},
+				"method": "GET",
+				"header": [
+					{
+						"key": "Accept",
+						"value": "text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,image/apng,*/*;q=0.8,application/signed-exchange;v=b3;q=0.9",
+						"type": "text"
+					},
+					{
+						"key": "Accept-Language",
+						"value": "en-US,en;q=0.9",
+						"type": "text"
+					},
+					{
+						"key": "DNT",
+						"value": "1",
+						"type": "text"
+					},
+					{
+						"key": "Host",
+						"value": "swent1linux.asu.edu",
+						"type": "text"
+					},
+					{
+						"key": "User-Agent",
+						"value": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/93.0.4577.63 Safari/537.36",
+						"type": "text"
+					}
+				],
+				"url": {
+					"raw": "https://swent1linux.asu.edu/ser421lab1/index.html",
+					"protocol": "https",
+					"host": [
+						"swent1linux",
+						"asu",
+						"edu"
+					],
+					"path": [
+						"ser421lab1",
+						"index.html"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "2.Adding Grocery Item",
+			"protocolProfileBehavior": {
+				"disabledSystemHeaders": {
+					"accept": true,
+					"user-agent": true,
+					"host": true,
+					"content-type": true
+				}
+			},
+			"request": {
+				"method": "POST",
+				"header": [
+					{
+						"key": "Accept",
+						"value": "text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,image/apng,*/*;q=0.8,application/signed-exchange;v=b3;q=0.9",
+						"type": "text"
+					},
+					{
+						"key": "Accept-Language",
+						"value": "en-US,en;q=0.9",
+						"type": "text"
+					},
+					{
+						"key": "Content-Type",
+						"value": "application/x-www-form-urlencoded",
+						"type": "text"
+					},
+					{
+						"key": "DNT",
+						"value": "1",
+						"type": "text"
+					},
+					{
+						"key": "Host",
+						"value": "swent1linux.asu.edu",
+						"type": "text"
+					},
+					{
+						"key": "User-Agent",
+						"value": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/93.0.4577.63 Safari/537.36",
+						"type": "text"
+					}
+				],
+				"body": {
+					"mode": "urlencoded",
+					"urlencoded": [
+						{
+							"key": "name",
+							"value": "asdesai8",
+							"type": "text"
+						},
+						{
+							"key": "brand",
+							"value": "Aditya Desai",
+							"type": "text"
+						},
+						{
+							"key": "custom",
+							"value": "non-vegetarian",
+							"type": "text"
+						},
+						{
+							"key": "quantity",
+							"value": "100",
+							"type": "text"
+						},
+						{
+							"key": "aisle",
+							"value": "247365",
+							"type": "text"
+						}
+					]
+				},
+				"url": {
+					"raw": "https://swent1linux.asu.edu/ser421lab1/groceries",
+					"protocol": "https",
+					"host": [
+						"swent1linux",
+						"asu",
+						"edu"
+					],
+					"path": [
+						"ser421lab1",
+						"groceries"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "3.Adding Grocery Item JSON",
+			"protocolProfileBehavior": {
+				"disabledSystemHeaders": {
+					"accept": true,
+					"user-agent": true,
+					"host": true
+				}
+			},
+			"request": {
+				"method": "POST",
+				"header": [
+					{
+						"key": "Accept",
+						"value": "text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,image/apng,*/*;q=0.8,application/signed-exchange;v=b3;q=0.9",
+						"type": "text"
+					},
+					{
+						"key": "Accept-Language",
+						"value": "en-US,en;q=0.9",
+						"type": "text"
+					},
+					{
+						"key": "Content-Type",
+						"value": "application/json",
+						"type": "text"
+					},
+					{
+						"key": "DNT",
+						"value": "1",
+						"type": "text"
+					},
+					{
+						"key": "Host",
+						"value": "swent1linux.asu.edu",
+						"type": "text"
+					},
+					{
+						"key": "User-Agent",
+						"value": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/93.0.4577.63 Safari/537.36",
+						"type": "text"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\r\n    \"name\" : \"asdesai8_json\",\r\n    \"brand\": \"Aditya Desai JSON\",\r\n    \"quantity\": \"100\",\r\n    \"aisle\": \"247365\",\r\n    \"custom\": \"vegetarian\"\r\n}"
+				},
+				"url": {
+					"raw": "https://swent1linux.asu.edu/ser421lab1/groceries",
+					"protocol": "https",
+					"host": [
+						"swent1linux",
+						"asu",
+						"edu"
+					],
+					"path": [
+						"ser421lab1",
+						"groceries"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "4.Retrieve Grocery Items",
+			"protocolProfileBehavior": {
+				"disabledSystemHeaders": {
+					"accept": true,
+					"host": true,
+					"user-agent": true
+				}
+			},
+			"request": {
+				"auth": {
+					"type": "noauth"
+				},
+				"method": "GET",
+				"header": [
+					{
+						"key": "Accept",
+						"value": "text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,image/apng,*/*;q=0.8,application/signed-exchange;v=b3;q=0.9",
+						"type": "text"
+					},
+					{
+						"key": "Accept-Language",
+						"value": "en-US,en;q=0.9",
+						"type": "text"
+					},
+					{
+						"key": "DNT",
+						"value": "1",
+						"type": "text"
+					},
+					{
+						"key": "Host",
+						"value": "swent1linux.asu.edu",
+						"type": "text"
+					},
+					{
+						"key": "User-Agent",
+						"value": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/93.0.4577.63 Safari/537.36",
+						"type": "text"
+					}
+				],
+				"url": {
+					"raw": "https://swent1linux.asu.edu/ser421lab1/my_groceries",
+					"protocol": "https",
+					"host": [
+						"swent1linux",
+						"asu",
+						"edu"
+					],
+					"path": [
+						"ser421lab1",
+						"my_groceries"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "5.Retrieve Grocery Items Plain Text Aisle 3",
+			"protocolProfileBehavior": {
+				"disabledSystemHeaders": {
+					"accept": true,
+					"host": true,
+					"user-agent": true
+				}
+			},
+			"request": {
+				"auth": {
+					"type": "noauth"
+				},
+				"method": "GET",
+				"header": [
+					{
+						"key": "Accept",
+						"value": "text/plain",
+						"type": "text"
+					},
+					{
+						"key": "Accept-Language",
+						"value": "en-US,en;q=0.9",
+						"type": "text"
+					},
+					{
+						"key": "DNT",
+						"value": "1",
+						"type": "text"
+					},
+					{
+						"key": "Host",
+						"value": "swent1linux.asu.edu",
+						"type": "text"
+					},
+					{
+						"key": "User-Agent",
+						"value": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/93.0.4577.63 Safari/537.36",
+						"type": "text"
+					}
+				],
+				"url": {
+					"raw": "https://swent1linux.asu.edu/ser421lab1/my_groceries?aisle=3",
+					"protocol": "https",
+					"host": [
+						"swent1linux",
+						"asu",
+						"edu"
+					],
+					"path": [
+						"ser421lab1",
+						"my_groceries"
+					],
+					"query": [
+						{
+							"key": "aisle",
+							"value": "3"
+						}
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "6.Retrieve Grocery Items JSON Aisle 3 Veg",
+			"protocolProfileBehavior": {
+				"disabledSystemHeaders": {
+					"accept": true,
+					"host": true,
+					"user-agent": true
+				}
+			},
+			"request": {
+				"auth": {
+					"type": "noauth"
+				},
+				"method": "GET",
+				"header": [
+					{
+						"key": "Accept",
+						"value": "application/json",
+						"type": "text"
+					},
+					{
+						"key": "Accept-Language",
+						"value": "en-US,en;q=0.9",
+						"type": "text"
+					},
+					{
+						"key": "DNT",
+						"value": "1",
+						"type": "text"
+					},
+					{
+						"key": "Host",
+						"value": "swent1linux.asu.edu",
+						"type": "text"
+					},
+					{
+						"key": "User-Agent",
+						"value": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/93.0.4577.63 Safari/537.36",
+						"type": "text"
+					}
+				],
+				"url": {
+					"raw": "https://swent1linux.asu.edu/ser421lab1/my_groceries?aisle=3&custom=veg",
+					"protocol": "https",
+					"host": [
+						"swent1linux",
+						"asu",
+						"edu"
+					],
+					"path": [
+						"ser421lab1",
+						"my_groceries"
+					],
+					"query": [
+						{
+							"key": "aisle",
+							"value": "3"
+						},
+						{
+							"key": "custom",
+							"value": "veg"
+						}
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "7.a. Incorrect Retrieve Grocery Items",
+			"protocolProfileBehavior": {
+				"disabledSystemHeaders": {
+					"accept": true,
+					"host": true,
+					"user-agent": true
+				}
+			},
+			"request": {
+				"auth": {
+					"type": "noauth"
+				},
+				"method": "POST",
+				"header": [
+					{
+						"key": "Accept",
+						"value": "text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,image/apng,*/*;q=0.8,application/signed-exchange;v=b3;q=0.9",
+						"type": "text"
+					},
+					{
+						"key": "Accept-Language",
+						"value": "en-US,en;q=0.9",
+						"type": "text"
+					},
+					{
+						"key": "DNT",
+						"value": "1",
+						"type": "text"
+					},
+					{
+						"key": "Host",
+						"value": "swent1linux.asu.edu",
+						"type": "text"
+					},
+					{
+						"key": "User-Agent",
+						"value": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/93.0.4577.63 Safari/537.36",
+						"type": "text"
+					}
+				],
+				"url": {
+					"raw": "https://swent1linux.asu.edu/ser421lab1/my_groceries",
+					"protocol": "https",
+					"host": [
+						"swent1linux",
+						"asu",
+						"edu"
+					],
+					"path": [
+						"ser421lab1",
+						"my_groceries"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "7.b. Retrieve Grocery Items - No Header",
+			"protocolProfileBehavior": {
+				"disabledSystemHeaders": {
+					"accept": true,
+					"host": true,
+					"user-agent": true,
+					"connection": true,
+					"accept-encoding": true
+				}
+			},
+			"request": {
+				"auth": {
+					"type": "noauth"
+				},
+				"method": "GET",
+				"header": [
+					{
+						"key": "Accept",
+						"value": "text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,image/apng,*/*;q=0.8,application/signed-exchange;v=b3;q=0.9",
+						"type": "text",
+						"disabled": true
+					},
+					{
+						"key": "Accept-Language",
+						"value": "en-US,en;q=0.9",
+						"type": "text",
+						"disabled": true
+					},
+					{
+						"key": "DNT",
+						"value": "1",
+						"type": "text",
+						"disabled": true
+					},
+					{
+						"key": "Host",
+						"value": "swent1linux.asu.edu",
+						"type": "text",
+						"disabled": true
+					},
+					{
+						"key": "User-Agent",
+						"value": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/93.0.4577.63 Safari/537.36",
+						"type": "text",
+						"disabled": true
+					}
+				],
+				"url": {
+					"raw": "https://swent1linux.asu.edu/ser421lab1/my_groceries",
+					"protocol": "https",
+					"host": [
+						"swent1linux",
+						"asu",
+						"edu"
+					],
+					"path": [
+						"ser421lab1",
+						"my_groceries"
+					]
+				}
+			},
+			"response": []
+		}
+	]
+}

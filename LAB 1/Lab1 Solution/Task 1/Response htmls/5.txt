@@ -1,0 +1,44 @@
+
+
+Grocery List
+
+
+Successfully filtered on: aisle for value: 3
+
+Product Name	Brand Name	Aisle Number	Quantity	Diet Type	
+anothawon	sss	3	1	veg	
+ampappa3	Kelloggs	3	10	breakfast	
+ampappa3-2	Kelloggs	3	15	breakfast	
+Test	ASU	3	2	1	
+ampappa3-1	Kelloggs	3	15	breakfast	
+cheese	good	3	2	veg	
+jarsenau3	3	3	3	dairy	
+tpervez2	apple	3	1	no	
+jhreshch3	sss	3	3	sss	
+sgupt4	abcd	3	1	4	
+12345	ABC	3	3	IDK	
+Bread	Great Value	3	1	Whole-Grain	
+sgupt3	abcd	3	1	4	
+thanse13_3	Gamer Water	3	420	veg	
+kjcurti9	kjcurtibrand	3	12	none	
+kjcurti8	kjcurtibrand	3	12	none	
+kjcurti6	kjcurtibrand	3	12	None	
+kjcurti5	kjcurtibrand	3	12	None	
+eggs	 	3	12	cage free	
+knizampa1	ABC	3	2	Vegan	
+kjcurti4	kjcurtibrand	3	12	None	
+tpervez12	cheap	3	3	no	
+kjcurti3	kjcurtibrand	3	12	None	
+tpervez10	cheap	3	3	no	
+ckhashim3	brand3	3	3	gluten free	
+fsda	dsf	3	2	no	
+jhreshch1_with_json	sss	3	3	sss	
+AGAIN	sss	3	1	veg	
+ampappa-2	Kelloggs	3	20	breakfast	
+aaaaa	bbbbb	3	3	none	
+xyz	abc	3	2	Vegan	
+
+Add More: /ser421lab1/
+
+
+

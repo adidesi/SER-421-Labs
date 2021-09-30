@@ -1,0 +1,18 @@
+<html>
+<head>
+<title>Grocery List</title>
+</head>
+<body>
+
+<p>
+Successfully added: asdesai8!
+</p>
+
+<p>
+Total items in grocery list: 253
+</p>
+
+<a href="/ser421lab1/">Add More</a></br>
+
+</body>
+</html>
