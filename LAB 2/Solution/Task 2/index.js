@@ -172,6 +172,7 @@ Array.prototype.filterData = function(query){
           }
         }
       }
+      return true;
   });
   return filteredData;
 };

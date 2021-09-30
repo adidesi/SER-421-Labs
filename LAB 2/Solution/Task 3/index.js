@@ -6,7 +6,9 @@ const EventEmitter = require( 'events' );
 const hostname = '127.0.0.1';
 const port = 3000;
 const errEmitter = new EventEmitter();
+
 const groceryList =[];
+const allowedParams = ['aisle', 'custom'];
 
 const server = http.createServer((req, res) => {
   errEmitter.on('grocery error', (err)=>{
@@ -35,6 +37,7 @@ const server = http.createServer((req, res) => {
     if(err instanceof CustExecption){
       processError(err);
     } else {
+      console.log(err);
       processError(new CustExecption(500, res, err.errMsg));
     }
   }
@@ -49,9 +52,7 @@ sendIndexHtml = (res) => {
       if(err) { 
         throw new CustExecption(404, res, err.errMsg);
       } else {
-        res.writeHead(200, {'Content-Type': 'text/html'});
-        res.write(contents);
-        res.end();
+        sendResponse(res, 200, contents, 'text/html');
       }       
   });
 }
@@ -68,30 +69,26 @@ addGroceryItem = (req,res,data) => {
     groceryList.push(item);
     msg = `<html>\n<head>\n<title>Grocery List</title>\n</head>\n<body>\n<p>\nSuccessfully added: `
     +item.name+`\n</p>\n<p>\nTotal items in grocery list: `+groceryList.length
-    +`\n</p>\n\n<a href="/">Add More</a></br>\n\n</body>\n</html>`
-    res.writeHead(200,'',{
-      'Content-Length': Buffer.byteLength(msg),
-      'Content-Type': 'text/html'
-    });
-    res.end(msg);
+    +`\n</p>\n\n<a href="/">Add More</a></br>\n\n</body>\n</html>`;
+
+    sendResponse(res, 200, msg, 'text/html');
   }
 }
 
 getGroceriesByParams = (req, res) => {
   let params = (req.url.indexOf('?') == -1)?{}:querystring.decode(req.url.split('?')[1]);
-  Object.keys(params).forEach((key) => !params[key] && delete params[key]);
+  if(Object.keys(params).some(item => !allowedParams.includes(item))) {
+    throw new CustExecption(400, res);
+  }
+  Object.keys(params).forEach(key => !params[key] && delete params[key]);
 
   let filteredData = groceryList.filterData(params);
-  let msg = parseFilteredList(filteredData, params, req.headers['accept']);
+  let msg = presentFilteredList(filteredData, params, req.headers['accept']);
 
-  res.writeHead(200,'',{
-    'Content-Length': Buffer.byteLength(msg),
-    'Content-Type': req.headers['accept'].includes('text/html')?'text/html':req.headers['accept']
-  });
-  res.end(msg);
+  sendResponse(res, 200, msg, req.headers['accept'].includes('text/html')?'text/html':req.headers['accept']);
 }
 
-parseFilteredList = (filteredData, params, headers)=>{
+presentFilteredList = (filteredData, params, headers)=>{
   let value1 = '', value2 = '', msg = '';
   if(headers.includes('text/html')) {    
     if(Object.keys(params).length > 0) {
@@ -142,7 +139,8 @@ parseFilteredList = (filteredData, params, headers)=>{
       'landing' : '/', 'filterMessages' : value1
       , 'groceryList' : {
           'headers' : ['Product Name','Brand Name','Aisle Number','Quantity','Diet Type','Delivery Time'] 
-        , 'data' : value2}
+        , 'data' : value2
+      }
       , 'error' : false
       , 'messages' : 'No error messages'
     };
@@ -159,7 +157,7 @@ checkMethod = (req,res,method) => {
 }
 
 Array.prototype.filterData = function(query){
-  let data = JSON.parse(JSON.stringify(this))
+  let data = JSON.parse(JSON.stringify(this));
   const filteredData = data.filter( (item) => {
       for (let key in query) {
         if (!item[key]) {
@@ -174,6 +172,7 @@ Array.prototype.filterData = function(query){
           }
         }
       }
+      return true;
   });
   return filteredData;
 };
@@ -202,12 +201,16 @@ processError = (err) => {
       err.code = 500;
       msg = '500 - Internal Server Error';
   };
-  msg += err.msg
-  err.res.writeHead(err.code, msg, {
+  msg += err.msg;
+  sendResponse(err.res, err.code, msg, 'text/plain');
+}
+
+sendResponse = (res, code, msg, contentType) => {
+  res.writeHead(code, '', {
     'Content-Length': Buffer.byteLength(msg),
-    'Content-Type': 'text/plain'
+    'Content-Type': contentType
   });
-  err.res.end(msg);
+  res.end(msg);
 }
 
 class CustExecption{
