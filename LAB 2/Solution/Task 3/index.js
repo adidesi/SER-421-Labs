@@ -5,21 +5,15 @@ const EventEmitter = require( 'events' );
 
 const hostname = '127.0.0.1';
 const port = 3000;
-const errEmitter = new EventEmitter();
 
 const groceryList =[];
 const allowedParams = ['aisle', 'custom', 'favorite'];
 
 const server = http.createServer((req, res) => {
-  errEmitter.on('grocery error', (err)=>{
-    processError( new CustExecption(400, res, err.errMsg));
-  });
-
   try{
     let cookies = parseCookie(req);
     if(req.url === '/' || req.url === '/index.html'){
-      if(checkMethod(req, res, 'GET')) {
-        
+      if(checkMethod(req, res, 'GET')) {        
         sendIndexHtml(res);
       }
     } else if (req.url.startsWith('/my_groceries?') || req.url === '/my_groceries'){ 
@@ -35,34 +29,42 @@ const server = http.createServer((req, res) => {
           data+=d;
         });
         req.on('end',()=>{
-            addGroceryItem(req, res, data)
+          try{
+            addGroceryItem(req, res, data);
+          } catch (err) {
+            if(err instanceof CustExecption){
+              processError(err);
+            } else {
+              console.log(err);
+              processError(new CustExecption(500, res, err.errMsg));
+            }
+          }
         });
       }
     } else if(req.url === '/update_favorites') {
-      if(checkRefererUrl(req, res, 'my_groceries')){
-        if(checkMethod(req, res, 'POST')) {
-          data = '';
-          req.on('data',(d)=>{
-            data+=d;
-          });
-          req.on('end',()=>{
-            cookies['favorite-item'] = addFavoriteItemCookieHeader(data.toString());
-            let headers ={};
-            if(Object.keys(cookies).length > 0) {
-              let cookieStr = ''
-              Object.keys(cookies).forEach(key => cookieStr+=key+`=`+cookies[key]+`;`);
-              if(cookieStr.replace(';', '').length > 0) {
-                headers = {'Set-Cookie':cookieStr};
-              }
+      if(checkRefererUrl(req, res, 'my_groceries') && checkMethod(req, res, 'POST')){
+        data = '';
+        req.on('data',(d)=>{
+          data+=d;
+        });
+        req.on('end',()=>{
+          try {
+          cookies['favorite-item'] = addFavoriteItemCookieHeader(data.toString());
+          let headers = setCookieHeader(cookies);
+          Object.assign(headers,{'Location':req.headers.referer});
+          sendResponse(res, 301,// Redirect to referer url
+          '',
+          'text/html',
+          headers);
+          } catch(err) {
+            if(err instanceof CustExecption){
+              processError(err);
+            } else {
+              console.log(err);
+              processError(new CustExecption(500, res, err.errMsg));
             }
-            Object.assign(headers,{'Location':req.headers.referer});
-            // let msg = getGroceriesByParams(req, res, cookies);
-            sendResponse(res, 301,// Redirect to referer url
-            'HERE',
-            'text/html',
-            headers);
-          });
-        }
+          }
+        });
       }
     } else {
       throw new CustExecption(404, res);
@@ -98,8 +100,9 @@ addGroceryItem = (req, res, data) => {
   } else if(req.headers['content-type']==='application/json'){
     body = JSON.parse(data.toString());
   }
-  let item = new GroceryItem(body);
-  if(Object.keys(item).length > 0) {
+  
+  if(validateGroceryItem(body, res)) {
+    let item = new GroceryItem(body);
     let index  = groceryList.findIndex(gItem => gItem.name == item.name);
     if(index > -1) {// Could have used array.filter but then i wanted my groceryList to be constant
       groceryList.splice(index, 1)
@@ -236,7 +239,7 @@ checkMethod = (req,res,method) => {
 }
 
 Array.prototype.filterData = function(paramQuery, cookies){
-  query = JSON.parse(JSON.stringify(paramQuery)) || {};
+  let query = JSON.parse(JSON.stringify(paramQuery)) || {};
   let data = JSON.parse(JSON.stringify(this));
   let filteredData = [];
   if(query.favorite){
@@ -296,6 +299,18 @@ processError = (err) => {
   sendResponse(err.res, err.code, msg, 'text/plain');
 }
 
+setCookieHeader = (cookies)=>{
+  let headers = {};
+  if(Object.keys(cookies).length > 0) {
+    let cookieStr = ''
+    Object.keys(cookies).forEach(key => cookieStr+=key+`=`+cookies[key]+`;`);
+    if(cookieStr.replace(';', '').length > 0) {
+      headers = {'Set-Cookie':cookieStr};
+    }
+  }
+  return headers;
+}
+
 sendResponse = (res, code, msg, contentType, headersNew={}) => {
   let headers = {
     'Content-Length': Buffer.byteLength(msg),
@@ -316,52 +331,47 @@ class CustExecption{
   }
 }
 
-class ParseException{
-  constructor(errMsg) {
-    this.errMsg = errMsg;
-  }
-}
-
-class GroceryItem {
-  constructor(value){
-    let newItem = {};
-    let keys = Object.keys(value);
-    if(!keys.includes('name') || value.name == null
-       || !value.name.match('[A-Z][a-z]*') || value.name.length < 5) {
-      errEmitter.emit( 'grocery error', new ParseException(' Name not present'));
+validateGroceryItem =(value, res)=>{
+  let keys = Object.keys(value);
+  if(!keys.includes('name') || value.name == null
+     || !value.name.match('[A-Z][a-z]*') || value.name.length < 5) {
+    throw new CustExecption(400, res, ' Name not present');
+  } else {
+    if(!keys.includes('brand') || value.brand == null 
+      || value.brand.length > 10) {
+      throw new CustExecption(400, res, ' Brand not present');
     } else {
-      newItem.name = value.name;
-      if(!keys.includes('brand') || value.brand == null 
-        || value.brand.length > 10) {
-        errEmitter.emit( 'grocery error', new ParseException(' Brand not present'));
+      if(!keys.includes('quantity') || value.quantity == null || isNaN(value.quantity)
+        || value.quantity < 1 || value.quantity > 12) {
+        throw new CustExecption(400, res, ' Quantity not present');
       } else {
-        newItem.brand = value.brand;
-        if(!keys.includes('quantity') || value.quantity == null || isNaN(value.quantity)
-          || value.quantity < 1 || value.quantity > 12) {
-          errEmitter.emit( 'grocery error', new ParseException(' Quantity not present'));
+        if(!keys.includes('aisle') || value.aisle == null 
+          || value.aisle < 2 || value.aisle > 20) {
+          throw new CustExecption(400, res, ' Aisle not present');
         } else {
-          newItem.quantity = value.quantity;
-          if(!keys.includes('aisle') || value.aisle == null 
-            || value.aisle < 2 || value.aisle > 20) {
-            errEmitter.emit( 'grocery error', new ParseException(' Aisle not present'));
+          if(!value.deliveryTime) {
+            return true;
           } else {
-            newItem.aisle = value.aisle;
-            newItem.custom = (value.custom)?value.custom:[];
-            if(!value.deliveryTime) {
-              newItem.deliveryTime = '';
-              Object.assign(this, newItem);
+              if(!isNaN(Date.parse(value.deliveryTime)) 
+                && value.deliveryTime > '2021-09-16T09:00' && value.deliveryTime < '2021-10-12T19:00')  {
+              return true;
             } else {
-                if(!isNaN(Date.parse(value.deliveryTime)) 
-                  && value.deliveryTime > '2021-09-16T09:00' && value.deliveryTime < '2021-10-12T19:00')  {
-                newItem.deliveryTime = value.deliveryTime;
-                Object.assign(this, newItem);
-              } else {
-                errEmitter.emit( 'grocery error', new ParseException(' Date not present'));
-              }
+              throw new CustExecption(400, res, ' Date not present');
             }
           }
         }
       }
     }
+  }
+}
+
+class GroceryItem {
+  constructor(value){
+    this.name = value.name;
+    this.brand = value.brand;
+    this.quantity = value.quantity;
+    this.aisle = value.aisle;
+    this.custom = (value.custom)?value.custom:[];
+    this.deliveryTime = (value.deliveryTime)?value.deliveryTime:'';
   }
 }
