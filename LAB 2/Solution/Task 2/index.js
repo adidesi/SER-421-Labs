@@ -1,6 +1,6 @@
 const http = require('http');
 const fs = require('fs');
-var querystring = require("querystring");
+var querystring = require('querystring');
 const EventEmitter = require( 'events' );
 
 const hostname = '127.0.0.1';
@@ -66,6 +66,10 @@ addGroceryItem = (req,res,data) => {
   }
   let item = new GroceryItem(body);
   if(Object.keys(item).length > 0) {
+    let index  = groceryList.findIndex(gItem => gItem.name == item.name)
+    if(index > -1) {// Could have used array.filter but then i wanted my groceryList to be constant
+      groceryList.splice(index, 1)
+    }
     groceryList.push(item);
     msg = `<html>\n<head>\n<title>Grocery List</title>\n</head>\n<body>\n<p>\nSuccessfully added: `
     +item.name+`\n</p>\n<p>\nTotal items in grocery list: `+groceryList.length
@@ -78,7 +82,7 @@ addGroceryItem = (req,res,data) => {
 getGroceriesByParams = (req, res) => {
   let params = (req.url.indexOf('?') == -1)?{}:querystring.decode(req.url.split('?')[1]);
   if(Object.keys(params).some(item => !allowedParams.includes(item))) {
-    throw new CustExecption(400, res);
+    throw new CustExecption(400, res, ' Invalid Parameters');
   }
   Object.keys(params).forEach(key => !params[key] && delete params[key]);
 

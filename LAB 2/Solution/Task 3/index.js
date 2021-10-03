@@ -1,6 +1,6 @@
 const http = require('http');
 const fs = require('fs');
-var querystring = require("querystring");
+var querystring = require('querystring');
 const EventEmitter = require( 'events' );
 
 const hostname = '127.0.0.1';
@@ -8,7 +8,7 @@ const port = 3000;
 const errEmitter = new EventEmitter();
 
 const groceryList =[];
-const allowedParams = ['aisle', 'custom'];
+const allowedParams = ['aisle', 'custom', 'favorite'];
 
 const server = http.createServer((req, res) => {
   errEmitter.on('grocery error', (err)=>{
@@ -16,19 +16,43 @@ const server = http.createServer((req, res) => {
   });
 
   try{
+    let cookies = parseCookie(req);
     if(req.url === '/' || req.url === '/index.html'){
       if(checkMethod(req, res, 'GET')) {
+        
         sendIndexHtml(res);
       }
     } else if (req.url.startsWith('/my_groceries?') || req.url === '/my_groceries'){ 
       if(checkMethod(req, res, 'GET')) {
-        getGroceriesByParams(req, res);
+        sendResponse(res, 200,
+          getGroceriesByParams(req, res, cookies),
+          req.headers['accept'].includes('text/html')?'text/html':req.headers['accept']);
       }
     } else if (req.url === '/groceries' ) {
       if(checkMethod(req, res, 'POST')) {
-        req.on('data',(data)=>{
-          addGroceryItem(req,res,data);
+        data = '';
+        req.on('data',(d)=>{
+          data+=d;
         });
+        req.on('end',()=>{
+            addGroceryItem(req, res, data, cookies)
+        });
+      }
+    } else if(req.url === '/update_favorites') {
+      if(checkReferrerUrl(req, res, 'my_groceries')){
+        if(checkMethod(req, res, 'POST')) {
+          data = '';
+          req.on('data',(d)=>{
+            data+=d;
+          });
+          req.on('end',()=>{
+            cookies['favorite-item'] =addFavoriteItemCookieHeader(data.toString());
+            let msg = getGroceriesByParams(req, res, cookies);
+            sendResponse(res, 200,
+            msg,
+            'text/html', cookies);
+          });
+        }
       }
     } else {
       throw new CustExecption(404, res);
@@ -57,7 +81,7 @@ sendIndexHtml = (res) => {
   });
 }
 
-addGroceryItem = (req,res,data) => {
+addGroceryItem = (req, res, data, cookies) => {
   body = '';
   if(req.headers['content-type']==='application/x-www-form-urlencoded'){
     body = querystring.decode(data.toString());
@@ -66,26 +90,28 @@ addGroceryItem = (req,res,data) => {
   }
   let item = new GroceryItem(body);
   if(Object.keys(item).length > 0) {
+    let index  = groceryList.findIndex(gItem => gItem.name == item.name);
+    if(index > -1) {// Could have used array.filter but then i wanted my groceryList to be constant
+      groceryList.splice(index, 1)
+    }
     groceryList.push(item);
-    msg = `<html>\n<head>\n<title>Grocery List</title>\n</head>\n<body>\n<p>\nSuccessfully added: `
-    +item.name+`\n</p>\n<p>\nTotal items in grocery list: `+groceryList.length
-    +`\n</p>\n\n<a href="/">Add More</a></br>\n\n</body>\n</html>`;
-
-    sendResponse(res, 200, msg, 'text/html');
+    sendResponse(res, 200,
+    `<html>\n<head>\n<title>Grocery List</title>\n</head>\n<body>\n<p>\nSuccessfully added: `
+            + item.name + `\n</p>\n<p>\nTotal items in grocery list: ` + groceryList.length
+            + `\n</p>\n\n<a href="/">Add More</a></br>\n\n</body>\n</html>`,
+    'text/html',
+    cookies);
   }
 }
 
-getGroceriesByParams = (req, res) => {
+getGroceriesByParams = (req, res, cookies) => {
   let params = (req.url.indexOf('?') == -1)?{}:querystring.decode(req.url.split('?')[1]);
   if(Object.keys(params).some(item => !allowedParams.includes(item))) {
-    throw new CustExecption(400, res);
+    throw new CustExecption(400, res, ' Invalid Parameters');
   }
   Object.keys(params).forEach(key => !params[key] && delete params[key]);
 
-  let filteredData = groceryList.filterData(params);
-  let msg = presentFilteredList(filteredData, params, req.headers['accept']);
-
-  sendResponse(res, 200, msg, req.headers['accept'].includes('text/html')?'text/html':req.headers['accept']);
+  return presentFilteredList(groceryList.filterData(params, cookies), params, req.headers['accept']);
 }
 
 presentFilteredList = (filteredData, params, headers)=>{
@@ -96,16 +122,20 @@ presentFilteredList = (filteredData, params, headers)=>{
     } else {
       value1 = '<span>No filters applied on grocery list.'
     }
-  if(filteredData.length > 0) {
-      filteredData.forEach(item=> value2 += '<tr>\n<td>'+item.name+'</td>\n<td>'+item.brand+'</td>\n<td>'+item.aisle+'</td>\n<td>'+item.quantity+'</td>\n<td>'+item.custom+'</td>\n<td>'+item.deliveryTime+'</td>\n</tr>');
+    let value3 = '';
+    if(filteredData.length > 0) {
+      filteredData.forEach(item=> value2 += '<tr>\n<td><input type="checkbox" name="favorite" value="'+item.name+'"></td>\n<td>'+item.name+'</td>\n<td>'+item.brand+'</td>\n<td>'+item.aisle+'</td>\n<td>'+item.quantity+'</td>\n<td>'+item.custom+'</td>\n<td>'+item.deliveryTime+'</td>\n</tr>');
+      value3 =`<input type="submit" value="Add Favorites">`
     } else {
       value2 = '<tr>No Items!</tr>';
     }
     msg = `<html>\n<head>\n<title>Grocery List</title>\n</head>\n<body>`
       + value1
-      +`</span></br></br>\n<table>\n<tr>\n<th>Product Name</th>\n<th>Brand Name</th>\n<th>Aisle Number</th>\n<th>Quantity</th>\n<th>Diet Type</th>\n<th>Delivery Time</th>\n</tr>\n`
+      +`</span></br></br>\n<form action="update_favorites" method="post"><table>\n<tr>\n<th>Favorites</th><th>Product Name</th>\n<th>Brand Name</th>\n<th>Aisle Number</th>\n<th>Quantity</th>\n<th>Diet Type</th>\n<th>Delivery Time</th>\n</tr>\n`
       + value2
-      +`\n</table><span>Add More: <a href="/">here</a></span>\n</body>\n</html>`;
+      +`\n</table>`
+      + value3
+      +`</form><span>Add More: <a href="/">here</a></span>\n</body>\n</html>`;
   } else if(headers === 'text/plain'){
     if(Object.keys(params).length > 0) {
       Object.keys(params).forEach(key=> value1 += '\nSuccessfully filtered on: ' + key +' for value '+ params[key]+'\n'); 
@@ -149,6 +179,46 @@ presentFilteredList = (filteredData, params, headers)=>{
   return msg;
 }
 
+addFavoriteItemCookieHeader =(data) => {
+  let newData = querystring.parse(data);
+  let cookieStr = '';
+  let favorite_item = [];
+  if(newData && newData.favorite) {
+    favorite_item = (Array.isArray(newData.favorite))?newData.favorite:[newData.favorite];
+    favorite_item.forEach(item=>{
+      cookieStr+='&'+item;
+    });
+  }
+  if(cookieStr.startsWith('&')) {
+    cookieStr = cookieStr.slice(1,cookieStr.length);
+  }
+  cookieStr += ';expires='+(new Date(Date.now()+10*60*1000)).toUTCString();
+  return cookieStr ;
+}
+
+parseCookie = (req) => {
+  let cookies = req.headers.cookie || ''; 
+  let cookieList = {};
+  if(cookies.length > 0) {  
+    cookies.split(';').forEach( cookie => {
+      // console.log('cookies:', cookie);
+      let parts = cookie.split('=');
+      cookieList[parts[0].trim()] = parts[1];
+    });
+    cookies = cookieList;
+  }
+  return cookies || {};
+}
+
+checkReferrerUrl = (req, res, referringRoute) => {
+  const referrer = req.headers.referer.split('/');
+  if(referrer.length > 3 && (referrer[3].startsWith(referringRoute+'?') || referrer[3] === referringRoute)){
+    return true;
+  } else {
+    throw new CustExecption(403, res)
+  }
+}
+
 checkMethod = (req,res,method) => {
   if(req.method !== method) {
     throw new CustExecption(405, res);
@@ -156,9 +226,21 @@ checkMethod = (req,res,method) => {
   return true;
 }
 
-Array.prototype.filterData = function(query){
+Array.prototype.filterData = function(paramQuery, cookies){
+  query = JSON.parse(JSON.stringify(paramQuery)) || {};
   let data = JSON.parse(JSON.stringify(this));
-  const filteredData = data.filter( (item) => {
+  let filteredData = [];
+  if(query.favorite){
+    if(cookies['favorite-item'] && cookies['favorite-item'].split('&').length > 0){
+      filteredData = data.filter(item => {
+        return cookies['favorite-item'].split('&').some(cItem => item.name === cItem);
+      });
+    }
+    Object.keys(query).forEach(key => key === 'favorite' && delete query[key]);
+  } else {
+    filteredData = data;
+  }
+  filteredData = filteredData.filter(item => {
       for (let key in query) {
         if (!item[key]) {
           return false;
@@ -205,11 +287,19 @@ processError = (err) => {
   sendResponse(err.res, err.code, msg, 'text/plain');
 }
 
-sendResponse = (res, code, msg, contentType) => {
-  res.writeHead(code, '', {
+sendResponse = (res, code, msg, contentType, newCookie={}) => {
+  let cookieFin = {
     'Content-Length': Buffer.byteLength(msg),
     'Content-Type': contentType
-  });
+  };
+  if(Object.keys(newCookie).length > 0) {
+    let cookieStr = ''
+    Object.keys(newCookie).forEach(key => cookieStr+=key+`=`+newCookie[key]+`;`);
+    if(cookieStr.replace(';', '').length > 0) {
+      cookieFin = Object.assign(cookieFin, {'Set-Cookie':cookieStr});
+    }
+  }
+  res.writeHead(code, '', cookieFin);
   res.end(msg);
 }
 
