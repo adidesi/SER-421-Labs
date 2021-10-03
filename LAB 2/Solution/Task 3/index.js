@@ -35,22 +35,32 @@ const server = http.createServer((req, res) => {
           data+=d;
         });
         req.on('end',()=>{
-            addGroceryItem(req, res, data, cookies)
+            addGroceryItem(req, res, data)
         });
       }
     } else if(req.url === '/update_favorites') {
-      if(checkReferrerUrl(req, res, 'my_groceries')){
+      if(checkRefererUrl(req, res, 'my_groceries')){
         if(checkMethod(req, res, 'POST')) {
           data = '';
           req.on('data',(d)=>{
             data+=d;
           });
           req.on('end',()=>{
-            cookies['favorite-item'] =addFavoriteItemCookieHeader(data.toString());
-            let msg = getGroceriesByParams(req, res, cookies);
-            sendResponse(res, 200,
-            msg,
-            'text/html', cookies);
+            cookies['favorite-item'] = addFavoriteItemCookieHeader(data.toString());
+            let headers ={};
+            if(Object.keys(cookies).length > 0) {
+              let cookieStr = ''
+              Object.keys(cookies).forEach(key => cookieStr+=key+`=`+cookies[key]+`;`);
+              if(cookieStr.replace(';', '').length > 0) {
+                headers = {'Set-Cookie':cookieStr};
+              }
+            }
+            Object.assign(headers,{'Location':req.headers.referer});
+            // let msg = getGroceriesByParams(req, res, cookies);
+            sendResponse(res, 301,// Redirect to referer url
+            'HERE',
+            'text/html',
+            headers);
           });
         }
       }
@@ -81,7 +91,7 @@ sendIndexHtml = (res) => {
   });
 }
 
-addGroceryItem = (req, res, data, cookies) => {
+addGroceryItem = (req, res, data) => {
   body = '';
   if(req.headers['content-type']==='application/x-www-form-urlencoded'){
     body = querystring.decode(data.toString());
@@ -100,7 +110,7 @@ addGroceryItem = (req, res, data, cookies) => {
             + item.name + `\n</p>\n<p>\nTotal items in grocery list: ` + groceryList.length
             + `\n</p>\n\n<a href="/">Add More</a></br>\n\n</body>\n</html>`,
     'text/html',
-    cookies);
+    );
   }
 }
 
@@ -201,7 +211,6 @@ parseCookie = (req) => {
   let cookieList = {};
   if(cookies.length > 0) {  
     cookies.split(';').forEach( cookie => {
-      // console.log('cookies:', cookie);
       let parts = cookie.split('=');
       cookieList[parts[0].trim()] = parts[1];
     });
@@ -210,7 +219,7 @@ parseCookie = (req) => {
   return cookies || {};
 }
 
-checkReferrerUrl = (req, res, referringRoute) => {
+checkRefererUrl = (req, res, referringRoute) => {
   const referrer = req.headers.referer.split('/');
   if(referrer.length > 3 && (referrer[3].startsWith(referringRoute+'?') || referrer[3] === referringRoute)){
     return true;
@@ -287,19 +296,15 @@ processError = (err) => {
   sendResponse(err.res, err.code, msg, 'text/plain');
 }
 
-sendResponse = (res, code, msg, contentType, newCookie={}) => {
-  let cookieFin = {
+sendResponse = (res, code, msg, contentType, headersNew={}) => {
+  let headers = {
     'Content-Length': Buffer.byteLength(msg),
     'Content-Type': contentType
   };
-  if(Object.keys(newCookie).length > 0) {
-    let cookieStr = ''
-    Object.keys(newCookie).forEach(key => cookieStr+=key+`=`+newCookie[key]+`;`);
-    if(cookieStr.replace(';', '').length > 0) {
-      cookieFin = Object.assign(cookieFin, {'Set-Cookie':cookieStr});
-    }
+  if(Object.keys(headersNew).length > 0) {
+    Object.assign(headers, headersNew);
   }
-  res.writeHead(code, '', cookieFin);
+  res.writeHead(code, '', headers);
   res.end(msg);
 }
 
