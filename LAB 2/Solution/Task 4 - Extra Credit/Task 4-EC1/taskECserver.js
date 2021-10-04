@@ -1,12 +1,28 @@
 const http = require('http');
 const fs = require('fs');
 var querystring = require('querystring');
-const EventEmitter = require( 'events' );
 
 const hostname = '127.0.0.1';
 const port = 3000;
 
-const groceryList =[];
+let groceryList = [];
+const fileName = 'taskECFile.dat';
+if(!fs.existsSync(fileName)){
+  fs.writeFileSync(fileName, '', {encoding:'utf-8'});
+}
+// reading start of program. Nodejs saves upto 1.5gb data in heap. 
+// working on the array only further ahead.
+fs.readFile(fileName,{encoding:'utf-8'}, (err, data)=>{
+  console.log('data', data);
+  if(err)console.log(err) ;
+  let dataArray = data.split('\n');
+  dataArray.forEach(row=>{
+    if(row.length > 0){
+      groceryList.push(JSON.parse(row));
+    }
+  });
+
+});
 const allowedParams = ['aisle', 'custom', 'favorite'];
 
 const server = http.createServer((req, res) => {
@@ -104,10 +120,13 @@ addGroceryItem = (req, res, data) => {
   if(validateGroceryItem(body, res)) {
     let item = new GroceryItem(body);
     let index  = groceryList.findIndex(gItem => gItem.name == item.name);
-    if(index > -1) {// Could have used array.filter but then i wanted my groceryList to be constant
-      groceryList.splice(index, 1)
+    if(index > -1) {
+      groceryList.splice(index, 1);//remove element with same name
     }
-    groceryList.push(item);
+    
+    groceryList.push(item);//add element at end 
+    fs.writeFileSync(fileName, JSON.stringify(groceryList), {encoding:'utf-8'});//re-write entire file
+    
     sendResponse(res, 200,
     `<html>\n<head>\n<title>Grocery List</title>\n</head>\n<body>\n<p>\nSuccessfully added: `
             + item.name + `\n</p>\n<p>\nTotal items in grocery list: ` + groceryList.length

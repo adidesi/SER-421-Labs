@@ -1,7 +1,6 @@
 const http = require('http');
 const fs = require('fs');
 var querystring = require('querystring');
-const EventEmitter = require( 'events' );
 
 const hostname = '127.0.0.1';
 const port = 3000;
