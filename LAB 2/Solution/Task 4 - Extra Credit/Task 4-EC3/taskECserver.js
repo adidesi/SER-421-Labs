@@ -1,12 +1,58 @@
 const http = require('http');
 const fs = require('fs');
 var querystring = require('querystring');
+const EventEmitter = require( 'events' );
+const schedule = require('node-schedule');
 
+const eventEmitter = new EventEmitter();
 const hostname = '127.0.0.1';
 const port = 3000;
 
-const groceryList =[];
+let groceryList = [];
+let timeStampList = [];
+const fileName = 'taskECFile.dat';
+const timeStampFileName = 'taskECTimeStampFile.dat';
+
+if(!fs.existsSync(fileName)){
+  fs.writeFileSync(fileName, '[]', {encoding:'utf-8'});
+}
+if(!fs.existsSync(timeStampFileName)){
+  fs.writeFileSync(timeStampFileName, '[]', {encoding:'utf-8'});
+}
+fs.readFile(fileName,{encoding:'utf-8'}, (err, data)=>{
+  if(err)console.log(err) ;
+  if(data.length > 0 && isJson(data)){
+    let jsonData = JSON.parse(data);
+    groceryList = Array.isArray(jsonData)?jsonData:[jsonData];
+  } else {
+    groceryList = [];
+    fs.writeFileSync(fileName, '[]', {encoding:'utf-8'});
+  } 
+});
+fs.readFile(timeStampFileName,{encoding:'utf-8'}, (err, data)=>{
+  if(err)console.log(err) ;
+  if(data.length > 0 && isJson(data)){
+    let jsonData = JSON.parse(data);
+    timeStampList = Array.isArray(jsonData)?jsonData:[jsonData];
+  } else {
+    timeStampList = [];
+    fs.writeFileSync(timeStampFileName, '[]', {encoding:'utf-8'});
+  } 
+});
+
 const allowedParams = ['aisle', 'custom', 'favorite'];
+
+eventEmitter.on('Item Delivered', (data)=>{
+  try{
+    timeStampList = timeStampList.filter(item => item.name != data.name );
+    groceryList = groceryList.filter(item => item.name != data.name);
+    fs.writeFileSync(fileName, JSON.stringify(groceryList), {encoding:'utf-8'});//re-write entire file
+    fs.writeFileSync(timeStampFileName, JSON.stringify(timeStampList), {encoding:'utf-8'});//re-write entire file
+  }catch(err){
+    console.log(err);
+    processError(new CustExecption(500, res, err.errMsg));
+  }
+});
 
 const server = http.createServer((req, res) => {
   try{
@@ -103,10 +149,23 @@ addGroceryItem = (req, res, data) => {
   if(validateGroceryItem(body, res)) {
     let item = new GroceryItem(body);
     let index  = groceryList.findIndex(gItem => gItem.name == item.name);
-    if(index > -1) {// Could have used array.filter but then i wanted my groceryList to be constant
-      groceryList.splice(index, 1)
+    if(index > -1) { 
+      groceryList.splice(index, 1);//remove element with same name
     }
-    groceryList.push(item);
+    let timeStampindex  = timeStampList.findIndex(gItem => gItem.name == item.name);
+    if(timeStampindex > -1) { 
+      timeStampList.splice(timeStampindex, 1);//remove element with same name
+    }
+
+    if(item.deliveryTime){
+      timeStampList.push({"name":item.name, "deliveryTime":item.deliveryTime});
+      schedule.scheduleJob(new Date(item.deliveryTime), (item) =>{
+        eventEmitter.emit('Item Delivered', item);
+      });
+    }
+    groceryList.push(item);//add element at end 
+    fs.writeFileSync(fileName, JSON.stringify(groceryList), {encoding:'utf-8'});//re-write entire file
+    fs.writeFileSync(timeStampFileName, JSON.stringify(timeStampList), {encoding:'utf-8'});//re-write entire file
     sendResponse(res, 200,
     `<html>\n<head>\n<title>Grocery List</title>\n</head>\n<body>\n<p>\nSuccessfully added: `
             + item.name + `\n</p>\n<p>\nTotal items in grocery list: ` + groceryList.length
@@ -369,4 +428,12 @@ class GroceryItem {
     this.custom = (value.custom)?value.custom:[];
     this.deliveryTime = (value.deliveryTime)?value.deliveryTime:'';
   }
+}
+isJson = (str) => {
+  try {
+      JSON.parse(str);
+  } catch (e) {
+      return false;
+  }
+  return true;
 }

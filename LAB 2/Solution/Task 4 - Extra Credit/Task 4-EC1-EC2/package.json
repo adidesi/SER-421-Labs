@@ -5,8 +5,8 @@
   "main": "task3server.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
-    "start": "node task3server.js",
-    "demonstart": "node task3server.js"
+    "start": "node taskECserver.js",
+    "demonstart": "node taskECserver.js"
   },
   "author": "",
   "license": "ISC"

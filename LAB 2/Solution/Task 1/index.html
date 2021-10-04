@@ -35,7 +35,7 @@
 					<tr>
 						<td>Aisle</td>
 						<td>
-							<select name="aisle" >
+							<select name="aisle" required>
 								<option disabled selected value> -- select an aisle -- </option>
 								<option value="2">2</option>
 								<option value="3">3</option>
@@ -61,16 +61,18 @@
 					</tr>
 					<tr>
 						<td>Diet</td>
-						<td><input type="checkbox" name="custom">Keto <br>
-							<input type="checkbox" name="custom">Mediterranean <br>
-							<input type="checkbox" name="custom">Vegan <br>
-							<input type="checkbox" name="custom">South Beach <br>
-							<input type="checkbox" name="custom">Atkin</td>
+						<td>
+							<input type="checkbox" name="custom" value="Keto">Keto <br>
+							<input type="checkbox" name="custom" value="Mediterranean">Mediterranean <br>
+							<input type="checkbox" name="custom" value="Vegan">Vegan <br>
+							<input type="checkbox" name="custom" value="South Beach">South Beach <br>
+							<input type="checkbox" name="custom" value="Atkin">Atkin
+						</td>
 					</tr>
 					<tr>
 						<td>Delivery Time</td>
 						<td>
-							<input type="datetime-local" min="2021-09-16T09:00" max="2021-10-12T19:00">
+							<input type="datetime-local" name="deliveryTime" min="2021-09-16T09:00" max="2021-10-12T19:00">
 						</td>
 					</tr>
 				</table>
@@ -85,13 +87,38 @@
 					<tr>
 						<td>Aisle</td>
 						<td>
-							<input type="text" name="aisle">
+							<select name="aisle">
+								<option selected value> -- select an aisle -- </option>
+								<option value="2">2</option>
+								<option value="3">3</option>
+								<option value="4">4</option>
+								<option value="5">5</option>
+								<option value="6">6</option>
+								<option value="7">7</option>
+								<option value="8">8</option>
+								<option value="9">9</option>
+								<option value="10">10</option>
+								<option value="11">11</option>
+								<option value="12">12</option>
+								<option value="13">13</option>
+								<option value="14">14</option>
+								<option value="15">15</option>
+								<option value="16">16</option>
+								<option value="17">17</option>
+								<option value="18">18</option>
+								<option value="19">19</option>
+								<option value="20">20</option>
+							</select>
 						</td>
 					</tr>
 					<tr>
 						<td>Diet</td>
 						<td>
-							<input type="text" name="custom">
+							<input type="checkbox" name="custom" value="Keto">Keto <br>
+							<input type="checkbox" name="custom" value="Mediterranean">Mediterranean <br>
+							<input type="checkbox" name="custom" value="Vegan">Vegan <br>
+							<input type="checkbox" name="custom" value="South Beach">South Beach <br>
+							<input type="checkbox" name="custom" value="Atkin">Atkin
 						</td>
 					</tr>
 				</table>
