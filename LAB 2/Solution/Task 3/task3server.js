@@ -333,8 +333,7 @@ class CustExecption{
 
 validateGroceryItem =(value, res)=>{
   let keys = Object.keys(value);
-  if(!(keys.includes('name') && value.name && value.name.length >= 5 && value.name[0].match(new RegExp('[A-Z]')) 
-    && value.name.substring(1,value.name.length - 1 ).match(new RegExp('[a-zA-Z]')))) {
+  if(!(keys.includes('name') && value.name && value.name.length >= 5 && value.name.match(new RegExp('^[A-Z][a-zA-Z]+$')))) {
     throw new CustExecption(400, res, ' Name not present');
   } else {
     if(!(keys.includes('brand') && value.brand && value.brand.length <= 10)) {
