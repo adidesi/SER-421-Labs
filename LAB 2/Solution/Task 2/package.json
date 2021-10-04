@@ -2,9 +2,11 @@
   "name": "ser421-lab2-task2",
   "version": "1.0.0",
   "description": "",
-  "main": "index.js",
+  "main": "task2server.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "start": "node task2server.js",
+    "demonstart": "nodemon task2server.js"
   },
   "author": "",
   "license": "ISC"
