@@ -49,13 +49,13 @@ const server = http.createServer((req, res) => {
         });
         req.on('end',()=>{
           try {
-          cookies['favorite-item'] = addFavoriteItemCookieHeader(data.toString());
-          let headers = setCookieHeader(cookies);
-          Object.assign(headers,{'Location':req.headers.referer});
-          sendResponse(res, 301,// Redirect to referer url
-          '',
-          'text/html',
-          headers);
+            cookies['favorite-item'] = addFavoriteItemCookieHeader(data.toString());
+            let headers = setCookieHeader(cookies);
+            Object.assign(headers,{'Location':req.headers.referer});
+            sendResponse(res, 301,// Redirect to referer url
+            '',
+            'text/html',
+            headers);
           } catch(err) {
             if(err instanceof CustExecption){
               processError(err);
@@ -242,16 +242,16 @@ Array.prototype.filterData = function(paramQuery, cookies){
   let query = JSON.parse(JSON.stringify(paramQuery)) || {};
   let data = JSON.parse(JSON.stringify(this));
   let filteredData = [];
-  if(query.favorite){
+  if(query.favorite && query.favorite == 'true'){
     if(cookies['favorite-item'] && cookies['favorite-item'].split('&').length > 0){
       filteredData = data.filter(item => {
         return cookies['favorite-item'].split('&').some(cItem => item.name === cItem);
       });
     }
-    Object.keys(query).forEach(key => key === 'favorite' && delete query[key]);
   } else {
     filteredData = data;
   }
+  Object.keys(query).forEach(key => key === 'favorite' && delete query[key]);
   filteredData = filteredData.filter(item => {
       for (let key in query) {
         if (!item[key]) {
@@ -333,20 +333,17 @@ class CustExecption{
 
 validateGroceryItem =(value, res)=>{
   let keys = Object.keys(value);
-  if(!keys.includes('name') || value.name == null
-     || !value.name.match('[A-Z][a-z]*') || value.name.length < 5) {
+  if(!(keys.includes('name') && value.name && value.name.length >= 5 && value.name[0].match(new RegExp('[A-Z]')) 
+    && value.name.substring(1,value.name.length - 1 ).match(new RegExp('[a-zA-Z]')))) {
     throw new CustExecption(400, res, ' Name not present');
   } else {
-    if(!keys.includes('brand') || value.brand == null 
-      || value.brand.length > 10) {
+    if(!(keys.includes('brand') && value.brand && value.brand.length <= 10)) {
       throw new CustExecption(400, res, ' Brand not present');
     } else {
-      if(!keys.includes('quantity') || value.quantity == null || isNaN(value.quantity)
-        || value.quantity < 1 || value.quantity > 12) {
+      if(!(keys.includes('quantity') && value.quantity && !isNaN(value.quantity) && value.quantity >= 1 && value.quantity <= 12)) {
         throw new CustExecption(400, res, ' Quantity not present');
       } else {
-        if(!keys.includes('aisle') || value.aisle == null 
-          || value.aisle < 2 || value.aisle > 20) {
+        if(!(keys.includes('aisle') && value.aisle && value.aisle >= 2 && value.aisle <= 20)) {
           throw new CustExecption(400, res, ' Aisle not present');
         } else {
           if(!value.deliveryTime) {

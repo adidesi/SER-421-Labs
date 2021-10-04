@@ -7,18 +7,19 @@ const hostname = '127.0.0.1';
 const port = 3000;
 
 const groceryList =[];
-const allowedParams = ['aisle', 'custom'];
+const allowedParams = ['aisle', 'custom', 'favorite'];
 
 const server = http.createServer((req, res) => {
   try{
+    let cookies = parseCookie(req);
     if(req.url === '/' || req.url === '/index.html'){
-      if(checkMethod(req, res, 'GET')) {
+      if(checkMethod(req, res, 'GET')) {        
         sendIndexHtml(res);
       }
     } else if (req.url.startsWith('/my_groceries?') || req.url === '/my_groceries'){ 
       if(checkMethod(req, res, 'GET')) {
         sendResponse(res, 200,
-          getGroceriesByParams(req, res),
+          getGroceriesByParams(req, res, cookies),
           req.headers['accept'].includes('text/html')?'text/html':req.headers['accept']);
       }
     } else if (req.url === '/groceries' ) {
@@ -31,6 +32,31 @@ const server = http.createServer((req, res) => {
           try{
             addGroceryItem(req, res, data);
           } catch (err) {
+            if(err instanceof CustExecption){
+              processError(err);
+            } else {
+              console.log(err);
+              processError(new CustExecption(500, res, err.errMsg));
+            }
+          }
+        });
+      }
+    } else if(req.url === '/update_favorites') {
+      if(checkRefererUrl(req, res, 'my_groceries') && checkMethod(req, res, 'POST')){
+        data = '';
+        req.on('data',(d)=>{
+          data+=d;
+        });
+        req.on('end',()=>{
+          try {
+          cookies['favorite-item'] = addFavoriteItemCookieHeader(data.toString());
+          let headers = setCookieHeader(cookies);
+          Object.assign(headers,{'Location':req.headers.referer});
+          sendResponse(res, 301,// Redirect to referer url
+          '',
+          'text/html',
+          headers);
+          } catch(err) {
             if(err instanceof CustExecption){
               processError(err);
             } else {
@@ -74,7 +100,7 @@ addGroceryItem = (req, res, data) => {
   } else if(req.headers['content-type']==='application/json'){
     body = JSON.parse(data.toString());
   }
-
+  
   if(validateGroceryItem(body, res)) {
     let item = new GroceryItem(body);
     let index  = groceryList.findIndex(gItem => gItem.name == item.name);
@@ -83,22 +109,22 @@ addGroceryItem = (req, res, data) => {
     }
     groceryList.push(item);
     sendResponse(res, 200,
-      `<html>\n<head>\n<title>Grocery List</title>\n</head>\n<body>\n<p>\nSuccessfully added: `
-              + item.name + `\n</p>\n<p>\nTotal items in grocery list: ` + groceryList.length
-              + `\n</p>\n\n<a href="/">Add More</a></br>\n\n</body>\n</html>`,
-      'text/html',
+    `<html>\n<head>\n<title>Grocery List</title>\n</head>\n<body>\n<p>\nSuccessfully added: `
+            + item.name + `\n</p>\n<p>\nTotal items in grocery list: ` + groceryList.length
+            + `\n</p>\n\n<a href="/">Add More</a></br>\n\n</body>\n</html>`,
+    'text/html',
     );
   }
 }
 
-getGroceriesByParams = (req, res) => {
+getGroceriesByParams = (req, res, cookies) => {
   let params = (req.url.indexOf('?') == -1)?{}:querystring.decode(req.url.split('?')[1]);
   if(Object.keys(params).some(item => !allowedParams.includes(item))) {
     throw new CustExecption(400, res, ' Invalid Parameters');
   }
   Object.keys(params).forEach(key => !params[key] && delete params[key]);
 
-  return presentFilteredList(groceryList.filterData(params), params, req.headers['accept']);
+  return presentFilteredList(groceryList.filterData(params, cookies), params, req.headers['accept']);
 }
 
 presentFilteredList = (filteredData, params, headers)=>{
@@ -109,16 +135,20 @@ presentFilteredList = (filteredData, params, headers)=>{
     } else {
       value1 = '<span>No filters applied on grocery list.'
     }
-  if(filteredData.length > 0) {
-      filteredData.forEach(item=> value2 += '<tr>\n<td>'+item.name+'</td>\n<td>'+item.brand+'</td>\n<td>'+item.aisle+'</td>\n<td>'+item.quantity+'</td>\n<td>'+item.custom+'</td>\n<td>'+item.deliveryTime+'</td>\n</tr>');
+    let value3 = '';
+    if(filteredData.length > 0) {
+      filteredData.forEach(item=> value2 += '<tr>\n<td><input type="checkbox" name="favorite" value="'+item.name+'"></td>\n<td>'+item.name+'</td>\n<td>'+item.brand+'</td>\n<td>'+item.aisle+'</td>\n<td>'+item.quantity+'</td>\n<td>'+item.custom+'</td>\n<td>'+item.deliveryTime+'</td>\n</tr>');
+      value3 =`<input type="submit" value="Add Favorites">`
     } else {
       value2 = '<tr>No Items!</tr>';
     }
     msg = `<html>\n<head>\n<title>Grocery List</title>\n</head>\n<body>`
       + value1
-      +`</span></br></br>\n<table>\n<tr>\n<th>Product Name</th>\n<th>Brand Name</th>\n<th>Aisle Number</th>\n<th>Quantity</th>\n<th>Diet Type</th>\n<th>Delivery Time</th>\n</tr>\n`
+      +`</span></br></br>\n<form action="update_favorites" method="post"><table>\n<tr>\n<th>Favorites</th><th>Product Name</th>\n<th>Brand Name</th>\n<th>Aisle Number</th>\n<th>Quantity</th>\n<th>Diet Type</th>\n<th>Delivery Time</th>\n</tr>\n`
       + value2
-      +`\n</table><span>Add More: <a href="/">here</a></span>\n</body>\n</html>`;
+      +`\n</table>`
+      + value3
+      +`</form><span>Add More: <a href="/">here</a></span>\n</body>\n</html>`;
   } else if(headers === 'text/plain'){
     if(Object.keys(params).length > 0) {
       Object.keys(params).forEach(key=> value1 += '\nSuccessfully filtered on: ' + key +' for value '+ params[key]+'\n'); 
@@ -162,6 +192,45 @@ presentFilteredList = (filteredData, params, headers)=>{
   return msg;
 }
 
+addFavoriteItemCookieHeader =(data) => {
+  let newData = querystring.parse(data);
+  let cookieStr = '';
+  let favorite_item = [];
+  if(newData && newData.favorite) {
+    favorite_item = (Array.isArray(newData.favorite))?newData.favorite:[newData.favorite];
+    favorite_item.forEach(item=>{
+      cookieStr+='&'+item;
+    });
+  }
+  if(cookieStr.startsWith('&')) {
+    cookieStr = cookieStr.slice(1,cookieStr.length);
+  }
+  cookieStr += ';expires='+(new Date(Date.now()+10*60*1000)).toUTCString();
+  return cookieStr ;
+}
+
+parseCookie = (req) => {
+  let cookies = req.headers.cookie || ''; 
+  let cookieList = {};
+  if(cookies.length > 0) {  
+    cookies.split(';').forEach( cookie => {
+      let parts = cookie.split('=');
+      cookieList[parts[0].trim()] = parts[1];
+    });
+    cookies = cookieList;
+  }
+  return cookies || {};
+}
+
+checkRefererUrl = (req, res, referringRoute) => {
+  const referrer = req.headers.referer.split('/');
+  if(referrer.length > 3 && (referrer[3].startsWith(referringRoute+'?') || referrer[3] === referringRoute)){
+    return true;
+  } else {
+    throw new CustExecption(403, res)
+  }
+}
+
 checkMethod = (req,res,method) => {
   if(req.method !== method) {
     throw new CustExecption(405, res);
@@ -169,10 +238,21 @@ checkMethod = (req,res,method) => {
   return true;
 }
 
-Array.prototype.filterData = function(paramQuery){
+Array.prototype.filterData = function(paramQuery, cookies){
   let query = JSON.parse(JSON.stringify(paramQuery)) || {};
   let data = JSON.parse(JSON.stringify(this));
-  let filteredData = data.filter((item) => {
+  let filteredData = [];
+  if(query.favorite){
+    if(cookies['favorite-item'] && cookies['favorite-item'].split('&').length > 0){
+      filteredData = data.filter(item => {
+        return cookies['favorite-item'].split('&').some(cItem => item.name === cItem);
+      });
+    }
+    Object.keys(query).forEach(key => key === 'favorite' && delete query[key]);
+  } else {
+    filteredData = data;
+  }
+  filteredData = filteredData.filter(item => {
       for (let key in query) {
         if (!item[key]) {
           return false;
@@ -219,6 +299,18 @@ processError = (err) => {
   sendResponse(err.res, err.code, msg, 'text/plain');
 }
 
+setCookieHeader = (cookies)=>{
+  let headers = {};
+  if(Object.keys(cookies).length > 0) {
+    let cookieStr = ''
+    Object.keys(cookies).forEach(key => cookieStr+=key+`=`+cookies[key]+`;`);
+    if(cookieStr.replace(';', '').length > 0) {
+      headers = {'Set-Cookie':cookieStr};
+    }
+  }
+  return headers;
+}
+
 sendResponse = (res, code, msg, contentType, headersNew={}) => {
   let headers = {
     'Content-Length': Buffer.byteLength(msg),
@@ -241,17 +333,20 @@ class CustExecption{
 
 validateGroceryItem =(value, res)=>{
   let keys = Object.keys(value);
-  if(!(keys.includes('name') && value.name && value.name.length >= 5 && value.name[0].match(new RegExp('[A-Z]')) 
-    && value.name.substring(1,value.name.length - 1 ).match(new RegExp('[a-zA-Z]')))) {
+  if(!keys.includes('name') || value.name == null
+     || !value.name.match('[A-Z][a-z]*') || value.name.length < 5) {
     throw new CustExecption(400, res, ' Name not present');
   } else {
-    if(!(keys.includes('brand') && value.brand && value.brand.length <= 10)) {
+    if(!keys.includes('brand') || value.brand == null 
+      || value.brand.length > 10) {
       throw new CustExecption(400, res, ' Brand not present');
     } else {
-      if(!(keys.includes('quantity') && value.quantity && !isNaN(value.quantity) && value.quantity >= 1 && value.quantity <= 12)) {
+      if(!keys.includes('quantity') || value.quantity == null || isNaN(value.quantity)
+        || value.quantity < 1 || value.quantity > 12) {
         throw new CustExecption(400, res, ' Quantity not present');
       } else {
-        if(!(keys.includes('aisle') && value.aisle && value.aisle >= 2 && value.aisle <= 20)) {
+        if(!keys.includes('aisle') || value.aisle == null 
+          || value.aisle < 2 || value.aisle > 20) {
           throw new CustExecption(400, res, ' Aisle not present');
         } else {
           if(!value.deliveryTime) {
