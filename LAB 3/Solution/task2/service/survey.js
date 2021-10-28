@@ -1,3 +1,4 @@
+const { json } = require('express');
 const fs = require('fs');
 const path = require('path');
 const { APIException } = require('../model/APIException');
@@ -8,7 +9,7 @@ class SurveyService{
 			let fileBuffer = fs.readFileSync(path.join(__dirname, '../json','survey.json'));
 			return JSON.parse(fileBuffer).questions;
 		} catch (err){
-			console.log(err);	
+			console.log(err);
 			throw new APIException(500, res, '');
 		}
     }

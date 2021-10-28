@@ -1,7 +1,6 @@
 
 const {APIException} = require('./model/APIException');
 const {SurveyService} = require('./service/survey');
-const {HTMLBuilderService} = require('./service/htmlbuilder');
 const express = require('express');
 const session = require('express-session');
 const cookieParser = require('cookie-parser');
@@ -50,8 +49,7 @@ app.all(['/', '/index.jsp'], (req, res) => {
 app.get('/controller', (req, res) => {
     errHandler(()=>{
         if(req.query.action = 'survey'){
-            htmlPage = HTMLBuilderService.buildSurveysPage(SurveyService.renderSurvey(req.session, req.cookies, questions));
-            res.status(200).send(htmlPage);
+            res.render('survey/survey', SurveyService.renderSurvey(req.session, req.cookies, questions));
         } else{
             throw new APIException(400, res, '');
         }
@@ -74,8 +72,7 @@ app.post('/controller', (req, res) => {
 
 app.get('/preferences.jsp', (req, res) => {
     errHandler(()=>{
-        htmlPage = HTMLBuilderService.buildPreferencesPage((req.cookies['preference'])? req.cookies['preference']: 'horizontal' );
-        res.status(200).send(htmlPage);
+        res.render('prefs/prefs', { preferences: (req.cookies['preference'])? req.cookies['preference']: 'horizontal' });
     }, res)
 });
 
@@ -111,8 +108,7 @@ handleSurveyAction = (req, res)=> {
             res.sendFile(path.join(__dirname, '/html', 'endSurvey.html'));
         } else {
             req.session['pageNumber']++;
-            htmlPage = HTMLBuilderService.buildSurveysPage(SurveyService.renderSurvey(req.session, req.cookies, questions));
-            res.status(200).send(htmlPage);
+            res.render('survey/survey', SurveyService.renderSurvey(req.session, req.cookies, questions));
         }
     } else if(req.body.submit == 'previous') {//previous button pressed
         if(req.session['pageNumber'] == 0){
@@ -120,8 +116,7 @@ handleSurveyAction = (req, res)=> {
         }
         addAnswer(req, res);
         req.session['pageNumber']--;
-        htmlPage = HTMLBuilderService.buildSurveysPage(SurveyService.renderSurvey(req.session, req.cookies, questions));
-        res.status(200).send(htmlPage);
+        res.render('survey/survey', SurveyService.renderSurvey(req.session, req.cookies, questions));
     } else{
         throw APIException(400, res, '');
     }
@@ -183,8 +178,7 @@ initializeForUser = (req, res) => {
             }
             allAnswers.push({'username': req.session.username, 'answer': req.session.answer});
         }
-        htmlPage = HTMLBuilderService.buildSurveysPage(SurveyService.renderSurvey(req.session, req.cookies, questions));
-        res.status(200).send(htmlPage);
+        res.render('survey/survey', SurveyService.renderSurvey(req.session, req.cookies, questions));
     } else {
         throw new APIException(400, res, '');
     }
@@ -195,8 +189,7 @@ getMatchesForUser = (req, res) => {
         matches = SurveyService.getMatches(req.body.username, allAnswers, questions);
         if(matches.length > 1)
             matches = matches.sort((m1, m2)=>m2.count - m1.count);
-        htmlPage = HTMLBuilderService.buildMatchesPage({'matches':matches, 'username':req.body.username});
-        res.status(200).send(htmlPage);
+        res.render('survey/matches', {'matches':matches, 'username':req.body.username});
     } else {
         throw new APIException(400, res, '');
     }
@@ -254,6 +247,5 @@ processError = (err) => {
         msg = '500 - Internal Server Error';
     };
     msg += ' ' + err.statusMessage;
-    htmlPage = HTMLBuilderService.buildErrorPage(msg);
-    err.responseObject.status(200).send(htmlPage);
+    err.responseObject.render('error/err', {errorText:msg});
 }
