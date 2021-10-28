@@ -186,21 +186,7 @@ initializeForUser = (req, res) => {
 
 getMatchesForUser = (req, res) => {
     if(req.body.username && new RegExp('[a-zA-Z]+').test(req.body.username)) {
-        matches = [];
-        userAnswer = allAnswers.filter(ans=> ans.username == req.body.username);
-        if(userAnswer.length > 0){
-            allAnswers.filter(ans=> ans.username != req.body.username).forEach(surveyRecord=>{
-                matchFound = {'username': surveyRecord.username};
-                count = 0
-                for(i = 0; i< questions.length; i++){
-                    if(surveyRecord.answer[i] == userAnswer[0].answer[i]){
-                        count++;
-                    }
-                }
-                matchFound.count = count;
-                matches.push(matchFound);
-            });
-        }
+        matches = SurveyService.getMatches(req.body.username, allAnswers, questions);
         if(matches.length > 1)
             matches = matches.sort((m1, m2)=>m2.count - m1.count);
         res.render('survey/matches', {'matches':matches, 'username':req.body.username});

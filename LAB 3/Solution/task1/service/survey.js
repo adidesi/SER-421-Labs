@@ -25,8 +25,23 @@ class SurveyService{
 		}
     }
 
-	static getMatches =(username, allAnswers) => {
-		
+	static getMatches =(username, allAnswers, questions) => {
+        let userAnswer = allAnswers.filter(ans=> ans.username == username);
+		let matches = []
+        if(userAnswer.length > 0){
+            allAnswers.filter(ans=> ans.username != username).forEach(surveyRecord=>{
+                let matchFound = {'username': surveyRecord.username};
+                let count = 0
+                for(let i = 0; i< questions.length; i++){
+                    if(surveyRecord.answer[i] == userAnswer[0].answer[i]){
+                        count++;
+                    }
+                }
+                matchFound.count = count;
+                matches.push(matchFound);
+            });
+        }
+		return matches;
 	}
 }
 
