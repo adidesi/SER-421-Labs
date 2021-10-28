@@ -14,17 +14,20 @@ class SurveyService{
 		}
     }
 
-    static renderSurvey = (session, surveyQuestions)=> {
-		console.log('answers', session.answer);
+    static renderSurvey = (session, cookie, surveyQuestions)=> {
 		return {
-			'pageNumber':session.pageNumber,
-			'username'	:session.username,
-			'question'	:surveyQuestions[session.pageNumber - 1].question,
-			'options' 	:surveyQuestions[session.pageNumber - 1].choices,
-			'preference':(session.preference)?session.preference:'horizontal',
-			'answer'	:session.answer
+			'pageNumber':session['pageNumber'],
+			'username'	:session['username'],
+			'question'	:surveyQuestions[session['pageNumber'] - 1].question,
+			'options' 	:surveyQuestions[session['pageNumber'] - 1].choices,
+			'preference':(cookie && cookie['preference'])?cookie['preference']:'horizontal',
+			'answer'	:session['answer']
 		}
     }
+
+	static getMatches =(username, allAnswers) => {
+		
+	}
 }
 
 exports.SurveyService = SurveyService
