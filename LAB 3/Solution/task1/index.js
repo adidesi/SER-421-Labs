@@ -5,6 +5,7 @@ const express = require('express');
 const session = require('express-session');
 const cookieParser = require('cookie-parser');
 const path = require('path');
+
 const app = express();
 const port = 3000;
 
@@ -22,11 +23,11 @@ app.set('views', path.join(__dirname + '/views'));
 
 questions = [];
 allAnswers = [
-    {'username':'a', 'answer':[0,0,0,0,0]},
+    {'username':'a', 'answer':[0,0,0,1,0]},
     {'username':'b', 'answer':[1,1,0,1,0]},
     {'username':'c', 'answer':[1,0,0,1,0]},
     {'username':'d', 'answer':[0,1,0,0,1]},
-    {'username':'e', 'answer':[0,0,1,0,1]}
+    {'username':'e', 'answer':[1,0,1,0,1]}
 ];
 
 // ----------------------ROUTES---------------------------
@@ -146,6 +147,7 @@ initializeForUser = (req, res) => {
                     expires: new Date(Date.now() + 900000),// 15 mins
                     httpOnly: true
                 });
+                res.clearCookie('preference');
                 res.cookie('preference','horizontal',{
                     expires: new Date(Date.now() + 900000),// 15 mins
                     httpOnly: true
@@ -184,22 +186,36 @@ initializeForUser = (req, res) => {
 
 getMatchesForUser = (req, res) => {
     if(req.body.username && new RegExp('[a-zA-Z]+').test(req.body.username)) {
-        if(allAnswers.findIndex(ans=> ans.username == req.body.username)!= -1){
-            console.log('there might be matches', allAnswers);
-        } else {
-            console.log('who you?');
+        matches = [];
+        userAnswer = allAnswers.filter(ans=> ans.username == req.body.username);
+        if(userAnswer.length > 0){
+            allAnswers.filter(ans=> ans.username != req.body.username).forEach(surveyRecord=>{
+                matchFound = {'username': surveyRecord.username};
+                count = 0
+                for(i = 0; i< questions.length; i++){
+                    if(surveyRecord.answer[i] == userAnswer[0].answer[i]){
+                        count++;
+                    }
+                }
+                matchFound.count = count;
+                matches.push(matchFound);
+            });
         }
-        res.render('survey/matches', {'matches':[], 'username':req.body.username})
+        if(matches.length > 1)
+            matches = matches.sort((m1, m2)=>m2.count - m1.count);
+        res.render('survey/matches', {'matches':matches, 'username':req.body.username});
     } else {
         throw new APIException(400, res, '');
     }
 }
 
 setCookieAndRedirect = (req, res) => {
+    res.clearCookie('preference');
     res.cookie('preference',req.body['preference'],{
         expires: new Date(Date.now() + 900000),// 15 mins
         httpOnly: true
     });
+    res.clearCookie('username');
     res.cookie('username', req.session['username'], {
         expires: new Date(Date.now() + 900000),// 15 mins
         httpOnly: true                
