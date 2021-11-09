@@ -1,0 +1,136 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<title>Lab 2 Solution</title>
+</head>
+	<body>
+		<header><h1>Lab 2 Solution</h1></header>
+		<section style="border: 1px solid black;">
+			<h3>Add groceries to list</h3>
+			<form action="groceries" method="post">
+				<table border=1 cols=2>
+					<tr>
+						<th>Field Name</th>
+						<th>Field Value</th>
+					</tr>
+					<tr>
+						<td>Product Name</td>
+						<td>
+							<input type="text" name="name" pattern="[A-Z]{1}[a-zA-Z]{4,}" minlength=5 required
+							title="Product Name should start with capital letter and have no number or special character with minimum word size 5">
+						</td>
+					</tr>
+					<tr>
+						<td>Product Brand</td>
+						<td><input type="text" name="brand" maxlength=10 required
+							title="Product Brand should have maximum word size 10">
+						</td>
+					</tr>
+					<tr>
+						<td>Quantity</td>
+						<td><input type="number" name="quantity" min=1 max=12 required
+							title="Quantity should have be between 1 and 12, both included">
+						</td>
+					</tr>
+					<tr>
+						<td>Aisle</td>
+						<td>
+							<select name="aisle" required>
+								<option disabled selected value> -- select an aisle -- </option>
+								<option value="2">2</option>
+								<option value="3">3</option>
+								<option value="4">4</option>
+								<option value="5">5</option>
+								<option value="6">6</option>
+								<option value="7">7</option>
+								<option value="8">8</option>
+								<option value="9">9</option>
+								<option value="10">10</option>
+								<option value="11">11</option>
+								<option value="12">12</option>
+								<option value="13">13</option>
+								<option value="14">14</option>
+								<option value="15">15</option>
+								<option value="16">16</option>
+								<option value="17">17</option>
+								<option value="18">18</option>
+								<option value="19">19</option>
+								<option value="20">20</option>
+							</select>
+						</td>
+					</tr>
+					<tr>
+						<td>Diet</td>
+						<td>
+							<input type="checkbox" name="custom" value="Keto">Keto <br>
+							<input type="checkbox" name="custom" value="Mediterranean">Mediterranean <br>
+							<input type="checkbox" name="custom" value="Vegan">Vegan <br>
+							<input type="checkbox" name="custom" value="South Beach">South Beach <br>
+							<input type="checkbox" name="custom" value="Atkin">Atkin
+						</td>
+					</tr>
+					<tr>
+						<td>Delivery Time</td>
+						<td>
+							<input type="datetime-local" name="deliveryTime" min="2021-09-16T09:00" max="2021-10-12T19:00">
+						</td>
+					</tr>
+				</table>
+				<input type="submit" value="Add">
+			</form>
+		</section>
+		<br><br>
+		<section style="border: 1px solid black;">
+			<h3>Retrieve groceries to list</h3>
+			<form action="my_groceries" method="GET">
+				<table border=1 cols=2>
+					<tr>
+						<td>Aisle</td>
+						<td>
+							<select name="aisle">
+								<option selected value> -- select an aisle -- </option>
+								<option value="2">2</option>
+								<option value="3">3</option>
+								<option value="4">4</option>
+								<option value="5">5</option>
+								<option value="6">6</option>
+								<option value="7">7</option>
+								<option value="8">8</option>
+								<option value="9">9</option>
+								<option value="10">10</option>
+								<option value="11">11</option>
+								<option value="12">12</option>
+								<option value="13">13</option>
+								<option value="14">14</option>
+								<option value="15">15</option>
+								<option value="16">16</option>
+								<option value="17">17</option>
+								<option value="18">18</option>
+								<option value="19">19</option>
+								<option value="20">20</option>
+							</select>
+						</td>
+					</tr>
+					<tr>
+						<td>Diet</td>
+						<td>
+							<input type="checkbox" name="custom" value="Keto">Keto <br>
+							<input type="checkbox" name="custom" value="Mediterranean">Mediterranean <br>
+							<input type="checkbox" name="custom" value="Vegan">Vegan <br>
+							<input type="checkbox" name="custom" value="South Beach">South Beach <br>
+							<input type="checkbox" name="custom" value="Atkin">Atkin
+						</td>
+					</tr>
+					<tr>
+						<td>Favorite Only?</td>
+						<td>
+							<input type="checkbox" name="favorite" value="true">
+						</td>
+					</tr>
+				</table>
+				<input type="submit" value="Retrieve List">
+			</form>
+		</section>
+		<footer style="margin-left: auto;margin-right: auto;text-align:center">Aditya Desai<br>ASURITE ID:asdesai8</footer>
+	</body>
+</html>

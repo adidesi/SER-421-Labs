@@ -19,17 +19,8 @@ app.use(session({
 }));
 app.use(cookieParser());
 
-app.set('view engine', 'ejs');
-app.set('views', path.join(__dirname + '/views'));
-
 questions = [];
-allAnswers = [
-    {'username':'a', 'answer':[0,0,0,1,0]},
-    {'username':'b', 'answer':[1,1,0,1,0]},
-    {'username':'c', 'answer':[1,0,0,1,0]},
-    {'username':'d', 'answer':[0,1,0,0,1]},
-    {'username':'e', 'answer':[1,0,1,0,1]}
-];
+allAnswers = [];
 
 // ----------------------ROUTES---------------------------
 app.get(['/', '/index.jsp'], (req, res) => {

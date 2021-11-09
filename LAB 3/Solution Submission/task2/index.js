@@ -23,6 +23,14 @@ app.set('views', path.join(__dirname + '/views'));
 
 questions = [];
 allAnswers = [];
+//Testing Data
+//allAnswers = [
+//     {'username':'a', 'answer':[0,0,0,1,0]},
+//     {'username':'b', 'answer':[1,1,0,1,0]},
+//     {'username':'c', 'answer':[1,0,0,1,0]},
+//     {'username':'d', 'answer':[0,1,0,0,1]},
+//     {'username':'e', 'answer':[1,0,1,0,1]}
+// ];
 
 // ----------------------ROUTES---------------------------
 app.get(['/', '/index.jsp'], (req, res) => {

@@ -1,6 +1,7 @@
 
 const {APIException} = require('./model/APIException');
 const {SurveyService} = require('./service/survey');
+const {HTMLBuilderService} = require('./service/htmlbuilder');
 const express = require('express');
 const session = require('express-session');
 const cookieParser = require('cookie-parser');
@@ -18,11 +19,16 @@ app.use(session({
 }));
 app.use(cookieParser());
 
-app.set('view engine', 'ejs');
-app.set('views', path.join(__dirname + '/views'));
-
 questions = [];
 allAnswers = [];
+//Testing Data
+//allAnswers = [
+//     {'username':'a', 'answer':[0,0,0,1,0]},
+//     {'username':'b', 'answer':[1,1,0,1,0]},
+//     {'username':'c', 'answer':[1,0,0,1,0]},
+//     {'username':'d', 'answer':[0,1,0,0,1]},
+//     {'username':'e', 'answer':[1,0,1,0,1]}
+// ];
 
 // ----------------------ROUTES---------------------------
 app.get(['/', '/index.jsp'], (req, res) => {
@@ -43,7 +49,8 @@ app.all(['/', '/index.jsp'], (req, res) => {
 app.get('/controller', (req, res) => {
     errHandler(()=>{
         if(req.query.action = 'survey'){
-            res.render('survey/survey', SurveyService.renderSurvey(req.session, req.cookies, questions));
+            htmlPage = HTMLBuilderService.buildSurveysPage(SurveyService.renderSurvey(req.session, req.cookies, questions));
+            res.status(200).send(htmlPage);
         } else{
             throw new APIException(400, res, '');
         }
@@ -66,7 +73,8 @@ app.post('/controller', (req, res) => {
 
 app.get('/preferences.jsp', (req, res) => {
     errHandler(()=>{
-        res.render('prefs/prefs', { preferences: (req.cookies['preference'])? req.cookies['preference']: 'horizontal' });
+        htmlPage = HTMLBuilderService.buildPreferencesPage((req.cookies['preference'])? req.cookies['preference']: 'horizontal' );
+        res.status(200).send(htmlPage);
     }, res)
 });
 
@@ -102,7 +110,8 @@ handleSurveyAction = (req, res)=> {
             res.sendFile(path.join(__dirname, '/html', 'endSurvey.html'));
         } else {
             req.session['pageNumber']++;
-            res.render('survey/survey', SurveyService.renderSurvey(req.session, req.cookies, questions));
+            htmlPage = HTMLBuilderService.buildSurveysPage(SurveyService.renderSurvey(req.session, req.cookies, questions));
+            res.status(200).send(htmlPage);
         }
     } else if(req.body.submit == 'previous') {//previous button pressed
         if(req.session['pageNumber'] == 0){
@@ -110,7 +119,8 @@ handleSurveyAction = (req, res)=> {
         }
         addAnswer(req, res);
         req.session['pageNumber']--;
-        res.render('survey/survey', SurveyService.renderSurvey(req.session, req.cookies, questions));
+        htmlPage = HTMLBuilderService.buildSurveysPage(SurveyService.renderSurvey(req.session, req.cookies, questions));
+        res.status(200).send(htmlPage);
     } else{
         throw APIException(400, res, '');
     }
@@ -172,7 +182,8 @@ initializeForUser = (req, res) => {
             }
             allAnswers.push({'username': req.session.username, 'answer': req.session.answer});
         }
-        res.render('survey/survey', SurveyService.renderSurvey(req.session, req.cookies, questions));
+        htmlPage = HTMLBuilderService.buildSurveysPage(SurveyService.renderSurvey(req.session, req.cookies, questions));
+        res.status(200).send(htmlPage);
     } else {
         throw new APIException(400, res, '');
     }
@@ -183,7 +194,8 @@ getMatchesForUser = (req, res) => {
         matches = SurveyService.getMatches(req.body.username, allAnswers, questions);
         if(matches.length > 1)
             matches = matches.sort((m1, m2)=>m2.count - m1.count);
-        res.render('survey/matches', {'matches':matches, 'username':req.body.username});
+        htmlPage = HTMLBuilderService.buildMatchesPage({'matches':matches, 'username':req.body.username});
+        res.status(200).send(htmlPage);
     } else {
         throw new APIException(400, res, '');
     }
@@ -241,5 +253,6 @@ processError = (err) => {
         msg = '500 - Internal Server Error';
     };
     msg += ' ' + err.statusMessage;
-    err.responseObject.render('error/err', {errorText:msg});
+    htmlPage = HTMLBuilderService.buildErrorPage(msg);
+    err.responseObject.status(200).send(htmlPage);
 }

@@ -1,0 +1,13 @@
+{
+  "name": "ser421-lab2-task2",
+  "version": "1.0.0",
+  "description": "",
+  "main": "task3server.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "start": "node taskECserver.js",
+    "demonstart": "node taskECserver.js"
+  },
+  "author": "",
+  "license": "ISC"
+}

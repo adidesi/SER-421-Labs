@@ -1,0 +1,17 @@
+1. Output to the console the <ol> element encompassing the results of the search
+A. console.log(document.getElementsByTagName('ol')[0])
+
+2. Output to the console the code for the "onload" event on the <body> element
+A. console.log(document.body.onload)
+
+3. Output to the console the 2nd child node underneath the <body> element
+A. console.log(document.body.childNodes[1])
+
+4. Output to the console the number of <h2> tags in the page
+A. console.log(document.getElementsByTagName('h2').length)
+
+5. Output to the console the value in the search bar (you must get this from the search bar not anywhere else on the page)
+A. console.log(document.getElementById('sb_form_q').value)
+
+6. Make the "Microsoft Bing" logo and text in the upper left corner go away
+A. document.getElementsByClassName('b_logoArea')[0].remove()
