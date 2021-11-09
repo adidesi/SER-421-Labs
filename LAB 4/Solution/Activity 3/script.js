@@ -114,7 +114,7 @@ function paintNewChat(userInput, response){
     document.getElementById('chat-input').value ='';
 
     timer = 5*1000;
-    resetTimer();    
+    resetTimer();
     
 }
 

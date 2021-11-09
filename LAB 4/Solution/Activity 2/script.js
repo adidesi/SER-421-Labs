@@ -60,6 +60,45 @@ function paintChatBox() {
     document.body.appendChild(elizaOutputDiv);
 }
 
+function paintUpdateChat(userInput, response){
+    document.getElementById('eliza-chat').remove();
+    let elizaOutputDiv = document.createElement('div');
+    elizaOutputDiv.id = 'eliza-chat';
+
+    let userText = document.createElement('p');
+    userText.textContent = username + ':\t' + userInput;
+    elizaOutputDiv.appendChild(userText);
+
+    let elizaText = document.createElement('p');
+    elizaText.textContent = 'Eliza' + ':\t' + getRandomObjectFromArray(response.answer);
+    elizaOutputDiv.appendChild(elizaText);
+
+    let elizaQuestionText = document.createElement('p');
+    elizaQuestionText.textContent = 'Eliza' + ':\t' + getRandomObjectFromArray(response.question);
+    elizaOutputDiv.appendChild(elizaQuestionText);
+
+    let chatInputDiv = document.createElement('div');
+    chatInputDiv.id = 'chat-input-div';
+
+    let chatInput = document.createElement('input');
+    chatInput.id = 'chat-input';
+    chatInput.type = 'text';
+    chatInput.name = 'message';
+    chatInputDiv.appendChild(chatInput);
+
+    let chatButton = document.createElement('button');
+    chatButton.class="button" ;
+    chatButton.id = 'chat-button';
+    chatButton.innerHTML = 'Send';
+    chatButton.onclick = processUserInput;
+    chatInputDiv.appendChild(chatButton);
+
+    elizaOutputDiv.appendChild(chatInputDiv);
+
+    document.getElementById('username_div').hidden = true;
+    document.body.appendChild(elizaOutputDiv);
+}
+
 function processUserInput() {
     let userInput = document.getElementById('chat-input').value;
     if (!userInput || userInput.length == 0) {
@@ -72,7 +111,7 @@ function processUserInput() {
         paintLearningAnnouncement('I don\'t understand that!');
     } else {
         let response = sendElizaNewMessage(userInput.split(' '));
-        paintNewChat(userInput, response);
+        paintUpdateChat(userInput, response);
     }
 }
 
@@ -96,38 +135,34 @@ function getElizaResponse(tokens){
     return 'I don\'t understand that!'
 }
 
-function paintNewChat(userInput, response){
-    let elizaChatDiv = document.getElementById('eliza-chat')
-    
-    let userText = document.createElement('p');
-    userText.textContent = username + ':\t' + userInput;
-    elizaChatDiv.appendChild(userText);
-
-    let elizaText = document.createElement('p');
-    elizaText.textContent = 'Eliza' + ':\t' + getRandomObjectFromArray(response.answer);
-    elizaChatDiv.appendChild(elizaText);
-
-    let elizaQuestionText = document.createElement('p');
-    elizaQuestionText.textContent = 'Eliza' + ':\t' + getRandomObjectFromArray(response.question);
-    elizaChatDiv.appendChild(elizaQuestionText);
-
-    document.getElementById('chat-input').value ='';
-
-    timer = 5*1000;
-    resetTimer();    
-    
-}
-
 function paintLearningAnnouncement(str){
-    let elizaChatDiv = document.getElementById('eliza-chat')
+    document.getElementById('eliza-chat').remove();
+
+    let elizaOutputDiv = document.createElement('div');
+    elizaOutputDiv.id = 'eliza-chat';
+
+    let chatInputDiv = document.createElement('div');
+    chatInputDiv.id = 'chat-input-div';
 
     let elizaText = document.createElement('p');
     elizaText.textContent = str;
-    elizaChatDiv.appendChild(elizaText);
+    elizaOutputDiv.appendChild(elizaText);
 
-    document.getElementById('chat-input').value ='';
+    let chatInput = document.createElement('input');
+    chatInput.id = 'chat-input';
+    chatInput.type = 'text';
+    chatInput.name = 'message';
+    chatInputDiv.appendChild(chatInput);
 
-    resetTimer();    
+    let chatButton = document.createElement('button');
+    chatButton.class="button" ;
+    chatButton.id = 'chat-button';
+    chatButton.innerHTML = 'Send';
+    chatButton.onclick = processUserInput;
+    chatInputDiv.appendChild(chatButton);
+
+    elizaOutputDiv.appendChild(chatInputDiv);
+    document.body.appendChild(elizaOutputDiv);
     
 }
 
@@ -169,4 +204,15 @@ function IsJson(str) {
         return false;
     }
     return true;
+}
+
+Element.prototype.remove = function() {
+    this.parentElement.removeChild(this);
+}
+NodeList.prototype.remove = HTMLCollection.prototype.remove = function() {
+    for(var i = this.length - 1; i >= 0; i--) {
+        if(this[i] && this[i].parentElement) {
+            this[i].parentElement.removeChild(this[i]);
+        }
+    }
 }
