@@ -14,7 +14,6 @@ function initLoad() {
         .then((response) => response.json())
         .then((data) => {
             dictionaryData = data;
-            console.log(dictionaryData);
         })
         .catch((error) => console.log(error));
 }
@@ -69,14 +68,19 @@ function paintUpdateChat(userInput, response){
     userText.textContent = username + ':\t' + userInput;
     elizaOutputDiv.appendChild(userText);
 
-    let elizaText = document.createElement('p');
-    elizaText.textContent = 'Eliza' + ':\t' + getRandomObjectFromArray(response.answer);
-    elizaOutputDiv.appendChild(elizaText);
+    if(response['answer']){
+        let elizaText = document.createElement('p');
+        elizaText.textContent = 'Eliza' + ':\t' + getRandomObjectFromArray(response.answer);
+        elizaOutputDiv.appendChild(elizaText);
 
-    let elizaQuestionText = document.createElement('p');
-    elizaQuestionText.textContent = 'Eliza' + ':\t' + getRandomObjectFromArray(response.question);
-    elizaOutputDiv.appendChild(elizaQuestionText);
-
+        let elizaQuestionText = document.createElement('p');
+        elizaQuestionText.textContent = 'Eliza' + ':\t' + getRandomObjectFromArray(response.question);
+        elizaOutputDiv.appendChild(elizaQuestionText);
+    } else {
+        let elizaText = document.createElement('p');
+        elizaText.textContent = 'Eliza' + ':\t' + response;
+        elizaOutputDiv.appendChild(elizaText);
+    }
     let chatInputDiv = document.createElement('div');
     chatInputDiv.id = 'chat-input-div';
 
@@ -127,9 +131,11 @@ function getElizaResponse(tokens){
         let selectedToken = tokens[selectedTokenIndex].replace(/[.!,?]/g,"");
         tokens.splice(selectedTokenIndex, 1);
         let foundObjs = dictionaryData.entries.filter(obj => obj['key'].includes(selectedToken));
-        let selectedObj = getRandomObjectFromArray(foundObjs);
-        if(selectedObj && Object.keys(selectedObj).length > 0){
-            return selectedObj;
+        if(foundObjs.length > 0){ 
+            let selectedObj = getRandomObjectFromArray(foundObjs);
+            if(selectedObj && Object.keys(selectedObj).length > 0){
+                return selectedObj;
+            }
         }
     }
     return 'I don\'t understand that!'
@@ -186,7 +192,7 @@ function IsStringLearningJson(str) {
         && jsonStr.hasOwnProperty('answer') && Array.isArray(jsonStr['answer']) && jsonStr['answer'].length > 0
         && jsonStr.hasOwnProperty('question') && Array.isArray(jsonStr['question']) && jsonStr['question'].length > 0)
         {
-            console.log(jsonStr);
+
             dictionaryData.entries.push(jsonStr);
             return true;
         } else {
