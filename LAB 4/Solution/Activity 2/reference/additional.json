@@ -1,8 +1,0 @@
-{ "dictionary_name" : "animals",
-  "entries":
-  [{
-  	"key": ["dog","dogs","cat","cats","mouse","mice","giraffe","giraffes","penguin","penguins","monkey","monkeys","moose","bird","birds","fish"],
-  	"answer": ["Oh, I love animals. My favorite: penguins.","I build this intelligence with my bear hands.","What you just said is completely irrelephant.","Oh, toadally cool!","I'm always owl by myself...","Oh my. You are giraffing me crazy!","Well, this is hawkward..."],
-  	"question": ["Do you have a favorite animal?","I like cats. Cats are nice. Do you like cats? I do.","Do you have water? I'm a little horse.","What's your favorite animal?","Do you like animals?"]
-  }]
-}
