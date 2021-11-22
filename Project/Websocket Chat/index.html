@@ -1,4 +1,6 @@
 <html>
+    <head><title>Real Time Messaging</title></head>
+    <body>
     <h1>Real Time Messaging</h1>
     <pre id="messages" style="height:400px;overflow: scroll;"></pre>
     <input type="text" id="messageBox" placeholder="Type here plz"
@@ -28,12 +30,12 @@
                     ws.close();
                 }
 
-                ws = new WebSocket('ws://localhost:52525');
+                ws = new WebSocket('ws://localhost:52526');
                 ws.onopen = () =>{
                     console.log('Connection Opened');
                 }
                 ws.onmessage = ({data}) => {
-                    showMessage(new TextDecoder("utf-8").decode(new Uint16Array(JSON.parse(data)['data'], 'utf8')));
+                    showMessage(new TextDecoder("utf-8").decode(new Uint16Array(JSON.parse(data)['data'], 'utf-8')));
                 }
                 ws.onclose = () =>{
                     ws = null;
@@ -52,4 +54,5 @@
             init();
         })()
     </script>
+    </body>
 </html>
