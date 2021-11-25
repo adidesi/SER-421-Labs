@@ -62,6 +62,11 @@ function Tournament(jsonString){
     }
 }
 
+isObjTournament = function(jsonString){
+    // let jsonObject = JSON.parse(jsonString);
+    return jsonString instanceof Tournament;
+}
+
 // Player Type
 function Player (lastName, firstInitial, score, hole){
     this.lastname = lastName;
