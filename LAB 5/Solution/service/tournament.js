@@ -46,7 +46,6 @@ function addPlayerToTournament(request, response, tournaments) {
     console.log('addPlayerToTournament')
 }
 
-
 exports.addTournament = addTournament;
 exports.addPlayerToTournament = addPlayerToTournament;
 exports.createPlayer = createPlayer;

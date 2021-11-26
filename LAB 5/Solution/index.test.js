@@ -1,10 +1,11 @@
 const request = require('supertest');
-const app = require('./index');
-it('should run', ()=>{
-    console.log('Running Blank Positive Test')
-});
+const {app, clearTournaments, clearPlayers} = require('./index');
 
 describe('Test Create tounament API', ()=>{
+    beforeEach(() => {
+        clearTournaments();
+        clearPlayers();
+    });
     it('POST tournament empty', ()=>{
         return request(app)
         .post('/tournament')
@@ -13,7 +14,6 @@ describe('Test Create tounament API', ()=>{
             expect400Response(response);
         });
     });
-
     it('POST tournament not well formed tournament without players', ()=>{
         let newTournament = {
             "tournament": {
@@ -33,7 +33,6 @@ describe('Test Create tounament API', ()=>{
             expect400Response(response);
         });
     });
-
     it('POST tournament well formed tournament with players', ()=>{
         let newTournament = {
             "tournament": {
@@ -69,7 +68,6 @@ describe('Test Create tounament API', ()=>{
             )
         });
     });
-
     it('POST tournament well formed tournament without players', ()=>{
         let newTournament = {
             "tournament": {
@@ -94,7 +92,6 @@ describe('Test Create tounament API', ()=>{
             )
         });
     });
-
     it('POST tournament well formed tournament with not completed tournament existing with same name', ()=>{
         let newTournament = {
             "tournament": {
@@ -131,7 +128,6 @@ describe('Test Create tounament API', ()=>{
             )
         });
     });
-
     it('POST tournament well formed tournament with completed tournament existing with same name', ()=>{
         let newTournament = {
             "tournament": {
@@ -176,8 +172,11 @@ describe('Test Create tounament API', ()=>{
         });
     });
 });
-
 describe('Test Create Player API', ()=>{
+    beforeEach(() => {
+        clearTournaments();
+        clearPlayers();
+    });
     it('POST Player empty', () =>{
         return request(app)
         .post('/createPlayer')
@@ -186,7 +185,6 @@ describe('Test Create Player API', ()=>{
             expect400Response(response);
         });
     });
-    
     it('POST Player not well formed', () =>{
         let newPlayer = {
             "player" : {
@@ -204,7 +202,6 @@ describe('Test Create Player API', ()=>{
             expect400Response(response);
         });
     });
-    
     it('POST Player well formed and doesnt exists in tournament', () =>{
         let newPlayer = {
             "player" : {
@@ -248,7 +245,6 @@ describe('Test Create Player API', ()=>{
             )
         });
     });
-
     it('POST Player well formed but exists in some tournament', () =>{
         let newPlayer = {
             "player" : {
@@ -281,7 +277,169 @@ describe('Test Create Player API', ()=>{
         });
     });
 });
+describe('Retrieve All Tournaments API', ()=>{
+    beforeEach(() => {
+        clearTournaments();
+        clearPlayers();
+        let newTournament = {
+            "tournament": {
+              "name": "British Open 1",
+              "year": 2001,
+              "award": 840000,
+              "yardage": 6905,
+              "par": 71,
+              "players": [{
+                "lastname": "Montgomerie",
+                "firstinitial": "C",
+                "score": -3,
+                "hole": 17
+              },
+              {
+                "lastname": "Fulke",
+                "firstinitial": "P",
+                "score": -5,
+                "hole": "finished"
+              }]
+            }
+        };
+        request(app)
+        .post('/tournament')
+        .set('Content-Type','application/json')
+        .send(newTournament)
+        .expect(200)
+        .then(response => {
+            expect(response.body).toEqual(
+                expect.objectContaining({
+                    message: expect.stringMatching('Tournament Added Successfully')
+                })
+            )
+        });
 
+        newTournament = {
+            "tournament": {
+              "name": "British Open 2",
+              "year": 2002,
+              "award": 500000,
+              "yardage": 7209,
+              "par": 73,
+              "players": [{
+                "lastname": "Owen",
+                "firstinitial": "G",
+                "score": -1,
+                "hole": "finished"
+              },
+              {
+                "lastname": "Parnevik",
+                "firstinitial": "J",
+                "score": 0,
+                "hole": 12
+              }]
+            }
+        };
+        request(app)
+        .post('/tournament')
+        .set('Content-Type','application/json')
+        .send(newTournament)
+        .expect(200)
+        .then(response => {
+            expect(response.body).toEqual(
+                expect.objectContaining({
+                    message: expect.stringMatching('Tournament Added Successfully')
+                })
+            )
+        });
+        newTournament = {
+            "tournament": {
+              "name": "British Open 3",
+              "year": 2005,
+              "award": 500000,
+              "yardage": 7209,
+              "par": 73,
+              "players": [{
+                "lastname": "Ogilvie",
+                "firstinitial": "J",
+                "score": 1,
+                "hole": "finished"
+              },
+              {
+                "lastname": "Cejka",
+                "firstinitial": "A",
+                "score": -2,
+                "hole": "finished"
+              }]
+            }
+        };
+        request(app)
+        .post('/tournament')
+        .set('Content-Type','application/json')
+        .send(newTournament)
+        .expect(200)
+        .then(response => {
+            expect(response.body).toEqual(
+                expect.objectContaining({
+                    message: expect.stringMatching('Tournament Added Successfully')
+                })
+            )
+        });
+    });
+    it('GET Tournament empty', () =>{
+        return request(app)
+        .get('/tournament')
+        .expect(200)
+        .then(response=>{
+            expect(response.body).toEqual(
+                expect.arrayContaining([
+                    expect.objectContaining({
+                        name : expect.any(String),
+                        year : expect.any(Number),
+                        award : expect.any(Number),
+                        yardage : expect.any(Number),
+                        par : expect.any(Number),
+                    })
+                ])
+            );
+            expect(response.body).toHaveLength(3);
+        });
+    });
+    it('GET Tournament year Range',() => {
+        return request(app)
+        .get('/tournament')
+        .query({ fromYear: 2001, toYear: 2003 })
+        .expect(200)
+        .then(response=>{
+            expect(response.body).toEqual(
+                expect.arrayContaining([
+                    expect.objectContaining({
+                        name : expect.any(String),
+                        year : expect.any(Number),
+                        award : expect.any(Number),
+                        yardage : expect.any(Number),
+                        par : expect.any(Number),
+                    })
+                ])
+            );
+            expect(response.body).toHaveLength(1);
+        });
+    });
+    it('GET Tournament Incorrect year Range',() => {
+        return request(app)
+        .get('/tournament')
+        .query({ fromYear: 2001 })
+        .expect(400)
+        .then(response=>{
+            expect400Response(response);
+        });
+    });
+    it('GET Tournament Incorrect Params',() => {
+        return request(app)
+        .get('/tournament')
+        .query({ award: 40000 })
+        .expect(400)
+        .then(response=>{
+            expect400Response(response);
+        });
+    });
+});
 
 function expect400Response(response){
     expect(response.body).toEqual(

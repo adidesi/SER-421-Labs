@@ -57,14 +57,22 @@ class Tournament{
 			this.award		 = parsedVal?.tournament?.award;
 			this.yardage 	 = parsedVal?.tournament?.yardage;
 			this.par 		 = parsedVal?.tournament?.par;
-			this.yardage 	 = parsedVal?.tournament?.yardage;
-			this.round 		 = parsedVal?.tournament?.round;
 			this.players 	 = [];
 			if(parsedVal.tournament.players)
 				parsedVal?.tournament?.players.forEach(player => this.players.push(new Player(player)))
 		}
 	}
 	
+	getMetaData(){
+		return {
+			name		 : this.name,
+			year		 : this.year,
+			award		 : this.award,
+			yardage 	 : this.yardage,
+			par          : this.par
+		}
+	}
+
 	copyPlayers() {
 		let newPlayers = [];
 		this.players.forEach(player => newPlayers.push(new Player(player)));

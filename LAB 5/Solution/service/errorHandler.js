@@ -31,7 +31,6 @@ function processError (err){
     err.responseObject.send({'message':msg});
 }
 
-
 function errHandler(fn, res){
     try {
         fn();
