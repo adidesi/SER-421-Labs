@@ -40,7 +40,7 @@ app.get('/tournament', (req, res)=>{
         let queryPresent = validateQParamsForGetTournament(req, res);
         tournaments.forEach(tournament => {
             if(!queryPresent || (tournament.year > req.query.fromYear && tournament.year < req.query.toYear)){
-                tournamentsObj.push(tournament.getMetaData()) 
+                tournamentsObj.push(tournament.getMetaData());
             }
         });
         res.statusCode = 200;
@@ -66,8 +66,8 @@ app.post('/addPlayer', (req, res)=>{
         if(validateAddPlayerObj(req.body)){
             let tournamentIndex = tournaments.findIndex(tournament => tournament.name === req.body.tournament);
             let playerIndex = players.findIndex(player => {
-                return player.lastname === req.body.player.lastname &&
-                            player.firstinitial	=== req.body.player.firstinitial;
+                return player.lastname === req.body.player.lastname
+                        && player.firstinitial	=== req.body.player.firstinitial;
             });
             if(tournamentIndex === -1){
                 if(playerIndex === -1) {
@@ -77,7 +77,13 @@ app.post('/addPlayer', (req, res)=>{
             } else if(playerIndex === -1) {
                 throw new APIException(422, res, 'Player with given name doesn\'t exist');
             }
-            
+            if(players[playerIndex].tournamentName !== undefined){
+                throw new APIException(422, res, 'Player is already associated with a tournament'); 
+            }
+            players[playerIndex].tournamentName = req.body.tournament;
+            players[playerIndex].score = 0;
+            players[playerIndex].hole = 0;
+            tournaments[tournamentIndex].players.push(players[playerIndex])
             res.statusCode = 200;
             res.send({'message': 'Player Added Successfully to Tournament'});
         } else {

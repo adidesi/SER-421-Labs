@@ -508,7 +508,6 @@ describe('Test Add Player To Tournament API', ()=>{
         });
     });
     it('POST invalid Player and invalid Tournament',()=>{
-        console.log('TEST 1');
         let addPlayerToTournamentObj = {
             "tournament": "British Open X",
             "player": {
@@ -526,7 +525,6 @@ describe('Test Add Player To Tournament API', ()=>{
         });
     });
     it('POST valid Player and invalid Tournament',()=>{
-        console.log('TEST 2');
         let addPlayerToTournamentObj = {
             "tournament": "British Open X",
             "player": {
@@ -544,7 +542,6 @@ describe('Test Add Player To Tournament API', ()=>{
         });
     });
     it('POST invalid Player and valid Tournament',()=>{
-        console.log('TEST 3');
         let addPlayerToTournamentObj = {
             "tournament": "British Open",
             "player": {
@@ -561,9 +558,61 @@ describe('Test Add Player To Tournament API', ()=>{
             expect422Response(response, 'Player with given name doesn\'t exist')
         });
     });
-    // it('POST valid Busy Player and valid Tournament',()=>{});
-    // it('POST valid Free Player and valid Tournament',()=>{});
-    // it('POST invalid request JSON',()=>{});
+    it('POST valid Busy Player and valid Tournament',()=>{
+        let addPlayerToTournamentObj = {
+            "tournament": "British Open",
+            "player": {
+                "lastname": "Fulke",
+                "firstinitial": "P"
+            }
+        }
+        return request(app)
+        .post('/addPlayer')
+        .set('Content-Type','application/json')
+        .send(addPlayerToTournamentObj)
+        .expect(422)
+        .then(response=>{
+            expect422Response(response, 'Player is already associated with a tournament');
+        });
+    });
+    it('POST valid Free Player and valid Tournament',()=>{
+        let addPlayerToTournamentObj = {
+            "tournament": "British Open",
+            "player": {
+                "lastname": "Owen",
+                "firstinitial": "G"
+            }
+        }
+        return request(app)
+        .post('/addPlayer')
+        .set('Content-Type','application/json')
+        .send(addPlayerToTournamentObj)
+        .expect(200)
+        .then(response=>{
+            expect(response.body).toEqual(
+                expect.objectContaining({
+                    message: expect.stringMatching('Player Added Successfully to Tournament')
+                })
+            );
+        });
+    });
+
+    it('POST invalid request JSON',()=>{
+        let addPlayerToTournamentObj = {
+            "player": {
+                "lastname": "Owen",
+                "firstinitial": "G"
+            }
+        }
+        return request(app)
+        .post('/addPlayer')
+        .set('Content-Type','application/json')
+        .send(addPlayerToTournamentObj)
+        .expect(400)
+        .then(response=>{
+            expect400Response(response);
+        });
+    });
 });
 
 function expect400Response(response){
