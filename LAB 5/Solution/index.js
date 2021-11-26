@@ -1,8 +1,8 @@
 const express = require('express');
 
 const {APIException} = require('./model/APIException');
-const {validateTournament, validatePlayer, validateQParamsForGetTournament, validateAddPlayerObj} = require('./utility/validators');
-const {addTournament, createPlayer} = require('./service/tournament');
+const {validateTournament, validatePlayer, validateAddPlayerObj} = require('./utility/validators');
+const {addTournament, createPlayer, addPlayerToTournament, getTournamentsAccParams, getPlayersAccParams} = require('./service/tournament');
 const {errHandler} = require('./service/errorHandler');
 
 const app = express();
@@ -26,7 +26,7 @@ app.post('/tournament', (req, res)=>{
     errHandler(()=>{
         if(validateTournament(req.body)){
             let flag  = addTournament(req, res, tournaments, players);
-            res.statusCode = 200;
+            res.statusCode = (flag === 'Created')?201:200;
             res.send({'message': 'Tournament '+flag+' Successfully'});
         } else {
             throw new APIException(400, res, '');
@@ -36,23 +36,17 @@ app.post('/tournament', (req, res)=>{
 
 app.get('/tournament', (req, res)=>{
     errHandler(()=>{
-        let tournamentsObj = [];
-        let queryPresent = validateQParamsForGetTournament(req, res);
-        tournaments.forEach(tournament => {
-            if(!queryPresent || (tournament.year > req.query.fromYear && tournament.year < req.query.toYear)){
-                tournamentsObj.push(tournament.getMetaData());
-            }
-        });
+        let tournamentsRespObj = getTournamentsAccParams(req, res, tournaments);
         res.statusCode = 200;
-        res.send(tournamentsObj)
+        res.send(tournamentsRespObj);
     }, res);
 });
 
-app.post('/createPlayer', (req, res)=>{
+app.post('/player', (req, res)=>{
     errHandler(()=>{
         if(req.body['player'] && validatePlayer(req.body.player)){
             createPlayer(req.body['player'], res, players);
-            res.statusCode = 200;
+            res.statusCode = 201;
             res.send({'message': 'Player Created Successfully'});
         } else {
             throw new APIException(400, res, '');
@@ -60,30 +54,18 @@ app.post('/createPlayer', (req, res)=>{
     }, res);
 });
 
+app.get('/player', (req, res)=>{
+    errHandler(()=>{
+        let playersRespObj = getPlayersAccParams(req, res, players);
+        res.statusCode = 200;
+        res.send(playersRespObj);
+    })
+});
 
 app.post('/addPlayer', (req, res)=>{
     errHandler(()=>{
         if(validateAddPlayerObj(req.body)){
-            let tournamentIndex = tournaments.findIndex(tournament => tournament.name === req.body.tournament);
-            let playerIndex = players.findIndex(player => {
-                return player.lastname === req.body.player.lastname
-                        && player.firstinitial	=== req.body.player.firstinitial;
-            });
-            if(tournamentIndex === -1){
-                if(playerIndex === -1) {
-                    throw new APIException(422, res, 'Tournament and Player with given name doesn\'t exist');
-                }
-                throw new APIException(422, res, 'Tournament with given name doesn\'t exist');
-            } else if(playerIndex === -1) {
-                throw new APIException(422, res, 'Player with given name doesn\'t exist');
-            }
-            if(players[playerIndex].tournamentName !== undefined){
-                throw new APIException(422, res, 'Player is already associated with a tournament'); 
-            }
-            players[playerIndex].tournamentName = req.body.tournament;
-            players[playerIndex].score = 0;
-            players[playerIndex].hole = 0;
-            tournaments[tournamentIndex].players.push(players[playerIndex])
+            addPlayerToTournament(req, res, tournaments, players);
             res.statusCode = 200;
             res.send({'message': 'Player Added Successfully to Tournament'});
         } else {

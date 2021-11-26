@@ -45,6 +45,26 @@ function validateQParamsForGetTournament(req, res){
     return false;
 }
 
+function validateQParamsForGetPlayer(req, res){
+    let keyLength = Object.keys(req.query).length
+    if(keyLength > 3 || keyLength < 1)
+        throw new APIException(400, res, '');
+    switch(keyLength){
+        case 3: if(!req.query.hasOwnProperty('maxScore') || isNaN(req.query['maxScore'])){
+            throw new APIException(400, res, '');
+        }
+        case 2:if(!req.query.hasOwnProperty('tName') || typeof(req.query['tName']) !== 'string' || req.query['tName'].trim().length === 0){
+            throw new APIException(400, res, '');
+        }
+        case 1: if(!req.query.hasOwnProperty('tournament') || typeof(req.query['tournament']) !== 'string'){
+            throw new APIException(400, res, '');
+        }
+        return keyLength;
+        default:
+            throw new APIException(400, res, '');
+    }
+}
+
 function validateAddPlayerObj(jsonStr){
     return Object.keys(jsonStr).length == 2
     && (jsonStr.hasOwnProperty('tournament') 
@@ -57,7 +77,9 @@ function validateAddPlayerObj(jsonStr){
     )
 }
 
+
 exports.validateQParamsForGetTournament = validateQParamsForGetTournament;
+exports.validateQParamsForGetPlayer = validateQParamsForGetPlayer;
 exports.validateTournament = validateTournament;
 exports.validatePlayer = validatePlayer;
 exports.validateAddPlayerObj = validateAddPlayerObj;
