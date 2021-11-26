@@ -154,7 +154,7 @@ describe('Test Add tounament API', ()=>{
         .post('/tournament')
         .set('Content-Type','application/json')
         .send(newTournament)
-        .then(response=>{
+        .then(response => {
             expect(response.body).toEqual(
                 expect.objectContaining({
                     message: expect.stringMatching('Tournament Added Successfully')
