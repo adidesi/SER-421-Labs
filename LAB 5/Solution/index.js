@@ -18,14 +18,16 @@ module.exports = app;
 let tournaments = [];
 
 function addTournament (newTournament) {
-    if( typeof(newTournament)!=Tournament){
-        throw Error;
-    }
-    let tournamentIndex = tournaments.findIndex(tournament => tournament.name == newTournament.name);
+    let newTournamentObj = new Tournament(newTournament)
+    let tournamentIndex = tournaments.findIndex(tournament => tournament.name === newTournamentObj.name);
     if(tournamentIndex != -1){
-        tournaments[tournamentIndex] = newTournament
+        if(tournaments[tournamentIndex].isTournamentCompleted())
+            return 'Completed';
+        tournaments[tournamentIndex] = newTournamentObj;
+        return 'Updated'
     } else {
-        tournaments.push(newTournament);
+        tournaments.push(newTournamentObj);
+        return 'Added'
     }
 }
 
@@ -38,7 +40,14 @@ function isObjTournament(jsonStr){
     && jsonStr.tournament.hasOwnProperty('award') && typeof(jsonStr.tournament['award']) == 'number' 
     && jsonStr.tournament.hasOwnProperty('yardage') && typeof(jsonStr.tournament['yardage']) == 'number' 
     && jsonStr.tournament.hasOwnProperty('par') && typeof(jsonStr.tournament['par']) == 'number' 
-    && jsonStr.tournament.hasOwnProperty('players') && Array.isArray(jsonStr.tournament['players']);
+    && jsonStr.tournament.hasOwnProperty('players') && Array.isArray(jsonStr.tournament['players'])
+    && jsonStr.tournament['players'].every(player => {
+        return Object.keys(player).length === 4
+     && player.hasOwnProperty('lastname') && typeof(player['lastname']) === 'string'
+     && player.hasOwnProperty('firstinitial') && typeof(player['firstinitial']) === 'string'
+     && player.hasOwnProperty('score') && typeof(player['score']) === 'number'
+     && player.hasOwnProperty('hole') && typeof(player['hole']) === 'number' || player['hole'] === 'finished'
+    });
 }
 
 app.get('/', (req, res)=>{
@@ -48,16 +57,20 @@ app.get('/', (req, res)=>{
 app.post('/tournament', (req, res)=>{
     try{
         if(isObjTournament(req.body)){
+            let flag = addTournament(req.body);
+            if(flag === 'Completed'){
+                throw new APIException(422, res, 'Completed Tournament with same name already exists')
+            }
             res.statusCode = 200;
-            res.send({'message': 'Api Working'})    
+            res.send({'message': 'Tournament '+flag+' Successfully'});
         } else {
-            throw new APIException(400, res, '')
+            throw new APIException(400, res, '');
         }
     }catch(error){
         if(error instanceof APIException) {
-            processError(error)
+            processError(error);
         } else {
-            console.log(error)
+            console.log(error);
             processError(new APIException(500, res, error));
         }
     }
@@ -81,13 +94,15 @@ function processError (err){
       case 405 :
         msg = '405 - Method not Allowed';
         break;
+      case 422:
+        msg = '422 - Unprocessable Entity';
+        break;
       case 500:
       default :
         err.statusCode = 500;
         msg = '500 - Internal Server Error';
-    };
-    msg += (err.statusMessage !== '')?' ':'' + err.statusMessage;
-    console.log('res', err.res)
+    }
+    msg += ((err.statusMessage !== '')?' ':'') + err.statusMessage;
     err.responseObject.statusCode = err.statusCode;
     err.responseObject.send({'message':msg});
 }
