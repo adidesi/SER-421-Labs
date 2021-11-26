@@ -4,7 +4,7 @@
   "description": "",
   "main": "index.js",
   "scripts": {
-    "test": "jest --watchAll",
+    "test": "jest --watchAll --unhandled-rejections=strict",
     "start": "node index.js",
     "demonstart": "nodemon index.js"
   },

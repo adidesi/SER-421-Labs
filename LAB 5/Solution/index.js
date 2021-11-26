@@ -1,7 +1,7 @@
 const express = require('express');
 
 const {APIException} = require('./model/APIException');
-const {validateTournament, validatePlayer} = require('./utility/validators');
+const {validateTournament, validatePlayer, validateQParamsForGetTournament, validateAddPlayerObj} = require('./utility/validators');
 const {addTournament, createPlayer} = require('./service/tournament');
 const {errHandler} = require('./service/errorHandler');
 
@@ -37,21 +37,7 @@ app.post('/tournament', (req, res)=>{
 app.get('/tournament', (req, res)=>{
     errHandler(()=>{
         let tournamentsObj = [];
-        let queryPresent = false;
-        if(Object.keys(req.query).length == 2){
-            if(req.query.hasOwnProperty('fromYear') && !isNaN(req.query['fromYear'])){
-                if(req.query.hasOwnProperty('toYear') && !isNaN(req.query['toYear'])){
-                    queryPresent = true;
-                } else {
-                    throw new APIException(400, res, '');
-                }
-            }
-            else {
-                throw new APIException(400, res, '');
-            }
-        } else if (Object.keys(req.query).length != 0){
-            throw new APIException(400, res, '');
-        }
+        let queryPresent = validateQParamsForGetTournament(req, res);
         tournaments.forEach(tournament => {
             if(!queryPresent || (tournament.year > req.query.fromYear && tournament.year < req.query.toYear)){
                 tournamentsObj.push(tournament.getMetaData()) 
@@ -59,17 +45,6 @@ app.get('/tournament', (req, res)=>{
         });
         res.statusCode = 200;
         res.send(tournamentsObj)
-    }, res);
-})
-
-app.post('/addPlayer', (req, res)=>{
-    errHandler(()=>{
-        if(req.body['tournament'] && typeof req.body['tournament'] === 'string'
-        && req.body['player'] && validatePlayer(req.body.player)){
-            addPlayerToTournament(req, res, tournaments);
-            res.statusCode = 200;
-            res.send({'message': 'Player Added Successfully to Tournament'});
-        }
     }, res);
 });
 
@@ -85,14 +60,40 @@ app.post('/createPlayer', (req, res)=>{
     }, res);
 });
 
+
+app.post('/addPlayer', (req, res)=>{
+    errHandler(()=>{
+        if(validateAddPlayerObj(req.body)){
+            let tournamentIndex = tournaments.findIndex(tournament => tournament.name === req.body.tournament);
+            let playerIndex = players.findIndex(player => {
+                return player.lastname === req.body.player.lastname &&
+                            player.firstinitial	=== req.body.player.firstinitial;
+            });
+            if(tournamentIndex === -1){
+                if(playerIndex === -1) {
+                    throw new APIException(422, res, 'Tournament and Player with given name doesn\'t exist');
+                }
+                throw new APIException(422, res, 'Tournament with given name doesn\'t exist');
+            } else if(playerIndex === -1) {
+                throw new APIException(422, res, 'Player with given name doesn\'t exist');
+            }
+            
+            res.statusCode = 200;
+            res.send({'message': 'Player Added Successfully to Tournament'});
+        } else {
+            throw new APIException(400, res)
+        }
+    }, res);
+});
+
 function clearTournaments() {
     tournaments = [];
+    return tournaments;
 }
 
 function clearPlayers() {
     players = [];
+    return players;
 }
-
-
 
 module.exports = {app, clearTournaments, clearPlayers};

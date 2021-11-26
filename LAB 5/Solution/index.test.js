@@ -65,7 +65,7 @@ describe('Test Create tounament API', ()=>{
                 expect.objectContaining({
                     message: expect.stringMatching('Tournament Added Successfully')
                 })
-            )
+            );
         });
     });
     it('POST tournament well formed tournament without players', ()=>{
@@ -168,7 +168,7 @@ describe('Test Create tounament API', ()=>{
         .send(newTournament)
         .expect(422)
         .then(response=>{
-            expect422Response(response, ' Completed Tournament with same name already exists');
+            expect422Response(response, 'Completed Tournament with same name already exists');
         });
     });
 });
@@ -188,7 +188,7 @@ describe('Test Create Player API', ()=>{
     it('POST Player not well formed', () =>{
         let newPlayer = {
             "player" : {
-                "lastname": "Fulke CP1",
+                "lastname": "Fulke",
                 "score": -5,
                 "hole": "finished"
             }
@@ -205,10 +205,10 @@ describe('Test Create Player API', ()=>{
     it('POST Player well formed and doesnt exists in tournament', () =>{
         let newPlayer = {
             "player" : {
-                "lastname": "Fulke CP4",
-                "score": -5,
+                "lastname": "Fulke",
                 "firstinitial": "P",
-                "hole": "finished"
+                "score": "",
+                "hole": ""
             }
         };
         request(app)
@@ -226,9 +226,9 @@ describe('Test Create Player API', ()=>{
 
         newPlayer = {
             "player" : {
-                "lastname": "Fulke CP5",
-                "score": -5,
+                "lastname": "FulkeX",
                 "firstinitial": "P",
+                "score": -5,
                 "hole": "finished"
             }
         };
@@ -248,10 +248,10 @@ describe('Test Create Player API', ()=>{
     it('POST Player well formed but exists in some tournament', () =>{
         let newPlayer = {
             "player" : {
-                "lastname": "Fulke CP3",
-                "score": -5,
-                "firstinitial": "P",
-                "hole": "finished"
+                "lastname": "Owen",
+                "firstinitial": "G",
+                "score": "",
+                "hole": ""
             }
         };
         request(app)
@@ -266,14 +266,22 @@ describe('Test Create Player API', ()=>{
                 })
             );
         });
-
+        
+        newPlayer = {
+            "player" : {
+                "lastname": "Owen",
+                "firstinitial": "G",
+                "score": -5,
+                "hole": "finished"
+            }
+        };
         return request(app)
         .post('/createPlayer')
         .set('Content-Type','application/json')
         .send(newPlayer)
         .expect(422)
         .then(response=>{
-            expect422Response(response, ' Player already exists')
+            expect422Response(response, 'Player already exists')
         });
     });
 });
@@ -440,6 +448,123 @@ describe('Retrieve All Tournaments API', ()=>{
         });
     });
 });
+describe('Test Add Player To Tournament API', ()=>{
+    beforeEach(() => {
+        clearTournaments();
+        clearPlayers();
+        let newTournament = {
+            "tournament": {
+              "name": "British Open",
+              "year": 2001,
+              "award": 840000,
+              "yardage": 6905,
+              "par": 71,
+              "players": [{
+                "lastname": "Montgomerie",
+                "firstinitial": "C",
+                "score": -3,
+                "hole": 17
+              },
+              {
+                "lastname": "Fulke",
+                "firstinitial": "P",
+                "score": -5,
+                "hole": 5
+              }]
+            }
+        };
+        request(app)
+        .post('/tournament')
+        .set('Content-Type','application/json')
+        .send(newTournament)
+        .expect(200)
+        .then(response => {
+            expect(response.body).toEqual(
+                expect.objectContaining({
+                    message: expect.stringMatching('Tournament Added Successfully')
+                })
+            );
+        });
+
+        let newPlayer = {
+            "player" : {
+                "lastname": "Owen",
+                "firstinitial": "G",
+                "score": "",
+                "hole": ""
+            }
+        };
+        request(app)
+        .post('/createPlayer')
+        .set('Content-Type','application/json')
+        .send(newPlayer)
+        .expect(200)
+        .then(response=>{
+            expect(response.body).toEqual(
+                expect.objectContaining({
+                    message : expect.stringMatching('Player Created Successfully')
+                })
+            );
+        });
+    });
+    it('POST invalid Player and invalid Tournament',()=>{
+        console.log('TEST 1');
+        let addPlayerToTournamentObj = {
+            "tournament": "British Open X",
+            "player": {
+                "lastname": "FulkeX",
+                "firstinitial": "P"
+            }
+        }
+        return request(app)
+        .post('/addPlayer')
+        .set('Content-Type','application/json')
+        .send(addPlayerToTournamentObj)
+        .expect(422)
+        .then(response=>{
+            expect422Response(response, 'Tournament and Player with given name doesn\'t exist')
+        });
+    });
+    it('POST valid Player and invalid Tournament',()=>{
+        console.log('TEST 2');
+        let addPlayerToTournamentObj = {
+            "tournament": "British Open X",
+            "player": {
+                "lastname": "Fulke",
+                "firstinitial": "P"
+            }
+        }
+        return request(app)
+        .post('/addPlayer')
+        .set('Content-Type','application/json')
+        .send(addPlayerToTournamentObj)
+        .expect(422)
+        .then(response=>{
+            expect422Response(response, 'Tournament with given name doesn\'t exist')
+        });
+    });
+    it('POST invalid Player and valid Tournament',()=>{
+        console.log('TEST 3');
+        let addPlayerToTournamentObj = {
+            "tournament": "British Open",
+            "player": {
+                "lastname": "OwenX",
+                "firstinitial": "G"
+            }
+        }
+        return request(app)
+        .post('/addPlayer')
+        .set('Content-Type','application/json')
+        .send(addPlayerToTournamentObj)
+        .expect(422)
+        .then(response=>{
+            expect422Response(response, 'Player with given name doesn\'t exist')
+        });
+    });
+    // it('POST valid Busy Player and valid Tournament',()=>{});
+    // it('POST valid Free Player and valid Tournament',()=>{});
+    // it('POST invalid request JSON',()=>{});
+});
 
 function expect400Response(response){
     expect(response.body).toEqual(
@@ -452,7 +577,7 @@ function expect400Response(response){
 function expect422Response(response, msg){
     expect(response.body).toEqual(
         expect.objectContaining({
-            message: expect.stringMatching('422 - Unprocessable Entity'+msg)
+            message: expect.stringMatching('422 - Unprocessable Entity '+msg)
         })
     );
 }

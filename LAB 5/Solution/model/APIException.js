@@ -3,7 +3,7 @@ class APIException{
     statusCode;
     responseObject;
     statusMessage;
-    constructor(code, res, msg){
+    constructor(code, res, msg=''){
         this.responseObject = res;
         this.statusCode = code;
         this.statusMessage = msg;
