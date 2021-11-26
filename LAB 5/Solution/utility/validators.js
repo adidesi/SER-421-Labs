@@ -65,7 +65,7 @@ function validateQParamsForGetPlayer(req, res){
     }
 }
 
-function validateAddPlayerObj(jsonStr){
+function validateTournamentPlayerMapObj(jsonStr){
     return Object.keys(jsonStr).length == 2
     && (jsonStr.hasOwnProperty('tournament') 
         && typeof(jsonStr['tournament']) === 'string' && jsonStr['tournament'].trim().length > 0)
@@ -82,4 +82,4 @@ exports.validateQParamsForGetTournament = validateQParamsForGetTournament;
 exports.validateQParamsForGetPlayer = validateQParamsForGetPlayer;
 exports.validateTournament = validateTournament;
 exports.validatePlayer = validatePlayer;
-exports.validateAddPlayerObj = validateAddPlayerObj;
+exports.validateTournamentPlayerMapObj = validateTournamentPlayerMapObj;

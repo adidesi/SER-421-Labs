@@ -43,7 +43,7 @@ function createPlayer(newPlayer, response, players, tournamentName = undefined){
     }
 }
 
-function addPlayerToTournament(req, res, tournaments, players) {
+function updatePlayerTournamentMap(req, res, tournaments, players, operation){
     let tournamentIndex = tournaments.findIndex(tournament => tournament.name === req.body.tournament);
     let playerIndex = players.findIndex(player => {
         return player.lastname === req.body.player.lastname
@@ -57,13 +57,25 @@ function addPlayerToTournament(req, res, tournaments, players) {
     } else if(playerIndex === -1) {
         throw new APIException(422, res, 'Player with given name doesn\'t exist');
     }
-    if(players[playerIndex].tournamentName !== undefined){
-        throw new APIException(422, res, 'Player is already associated with a tournament'); 
+    if((operation === 'A' && players[playerIndex].tournamentName !== undefined)
+        || (operation === 'R' && players[playerIndex].tournamentName !== req.body.tournament)){
+        throw new APIException(422, res, 'Player is already associated with some tournament'); 
     }
-    players[playerIndex].tournamentName = req.body.tournament;
-    players[playerIndex].score = 0;
-    players[playerIndex].hole = 0;
-    tournaments[tournamentIndex].players.push(players[playerIndex]);
+    players[playerIndex].tournamentName = (operation === 'A')?req.body.tournament:undefined;
+    players[playerIndex].score = (operation === 'A')?0:'';
+    players[playerIndex].hole = (operation === 'A')?0:'';
+    if(operation === 'A')
+        tournaments[tournamentIndex].players.push(players[playerIndex]);
+    else
+        tournaments[tournamentIndex].players.splice(playerIndex, 1);
+}
+
+function addPlayerToTournament(req, res, tournaments, players) {
+    updatePlayerTournamentMap(req, res, tournaments, players, 'A');
+}
+
+function removePlayerFromTournament(req, res, tournaments, players){
+    updatePlayerTournamentMap(req, res, tournaments, players, 'R');
 }
 
 function getTournamentsAccParams(req, res, tournaments){
@@ -96,6 +108,7 @@ function getPlayersAccParams(req, res, players){
 }
 exports.addTournament = addTournament;
 exports.addPlayerToTournament = addPlayerToTournament;
+exports.removePlayerFromTournament = removePlayerFromTournament;
 exports.createPlayer = createPlayer;
 exports.getTournamentsAccParams = getTournamentsAccParams;
 exports.getPlayersAccParams = getPlayersAccParams

@@ -1,8 +1,8 @@
 const express = require('express');
 
 const {APIException} = require('./model/APIException');
-const {validateTournament, validatePlayer, validateAddPlayerObj} = require('./utility/validators');
-const {addTournament, createPlayer, addPlayerToTournament, getTournamentsAccParams, getPlayersAccParams} = require('./service/tournament');
+const {validateTournament, validatePlayer, validateTournamentPlayerMapObj} = require('./utility/validators');
+const {addTournament, createPlayer, addPlayerToTournament, removePlayerFromTournament, getTournamentsAccParams, getPlayersAccParams} = require('./service/tournament');
 const {errHandler} = require('./service/errorHandler');
 
 const app = express();
@@ -59,12 +59,12 @@ app.get('/player', (req, res)=>{
         let playersRespObj = getPlayersAccParams(req, res, players);
         res.statusCode = 200;
         res.send(playersRespObj);
-    })
+    }, res)
 });
 
 app.post('/addPlayer', (req, res)=>{
     errHandler(()=>{
-        if(validateAddPlayerObj(req.body)){
+        if(validateTournamentPlayerMapObj(req.body)){
             addPlayerToTournament(req, res, tournaments, players);
             res.statusCode = 200;
             res.send({'message': 'Player Added Successfully to Tournament'});
@@ -72,6 +72,18 @@ app.post('/addPlayer', (req, res)=>{
             throw new APIException(400, res)
         }
     }, res);
+});
+
+app.post('/removePlayer', (req, res)=>{
+    errHandler(()=>{
+        if(validateTournamentPlayerMapObj(req.body)){
+            removePlayerFromTournament(req, res, tournaments, players);
+            res.statusCode = 200;
+            res.send({'message': 'Player Removed Successfully from Tournament'});
+        } else {
+            throw new APIException(400, res)
+        }
+    }, res)
 });
 
 function clearTournaments() {
