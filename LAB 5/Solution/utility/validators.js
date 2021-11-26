@@ -13,11 +13,11 @@ function validateTournament(jsonStr){
 }
 
 function validatePlayer(jsonStr){
-    return Object.keys(jsonStr).length === 4
-    && jsonStr.hasOwnProperty('lastname') && typeof(jsonStr['lastname']) === 'string'
-    && jsonStr.hasOwnProperty('firstinitial') && typeof(jsonStr['firstinitial']) === 'string'
-    && jsonStr.hasOwnProperty('score') && typeof(jsonStr['score']) === 'number'
-    && jsonStr.hasOwnProperty('hole') && typeof(jsonStr['hole']) === 'number' || jsonStr['hole'] === 'finished';
+    return Object.keys(jsonStr).length == 4
+    && (jsonStr.hasOwnProperty('lastname') && typeof(jsonStr['lastname']) === 'string' && jsonStr['lastname'].trim().length > 0)
+    && (jsonStr.hasOwnProperty('firstinitial') && typeof(jsonStr['firstinitial']) === 'string' && jsonStr['firstinitial'].trim().length === 1)
+    && (jsonStr.hasOwnProperty('score') && typeof(jsonStr['score']) === 'number')
+    && (jsonStr.hasOwnProperty('hole') && typeof(jsonStr['hole']) === 'number' || jsonStr['hole'] === 'finished');
 }
 
 exports.validateTournament = validateTournament;
