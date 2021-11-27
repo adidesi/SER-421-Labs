@@ -119,6 +119,27 @@ function getPlayersAccParams(req, res, players){
     });
     return playersRespObj;
 }
+
+function updatePlayerScore(req, response, tournaments, players){
+    let playerIndex = players.findIndex(player => {
+        return player.lastname === req.body.player.lastname
+                && player.firstinitial	=== req.body.player.firstinitial;
+    });
+    if(playerIndex === -1) {
+        throw new APIException(422, response, 'Player with given name doesn\'t exist');
+    } else if (!players[playerIndex].tournamentName){
+        throw new APIException(422, response, 'Player is not associated with some tournament');
+    } else if(players[playerIndex].getHole() == 18){
+        throw new APIException(422, response, 'Player already finished playing');
+    }
+    players[playerIndex].postScore(req.body.score);
+    let tournamentIndex = tournaments.findIndex(tournament => tournament.name === players[playerIndex].tournamentName);
+    tournaments[tournamentIndex].players[
+        tournaments[tournamentIndex].searchPlayer(req.body.player.lastname, req.body.player.firstinitial)]
+            .postScore(req.body.score);
+}
+
+exports.updatePlayerScore = updatePlayerScore;
 exports.addTournament = addTournament;
 exports.addPlayerToTournament = addPlayerToTournament;
 exports.removePlayerFromTournament = removePlayerFromTournament;

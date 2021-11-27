@@ -1,8 +1,13 @@
 const express = require('express');
 
 const {APIException} = require('./model/APIException');
-const {validateTournament, validatePlayer, verifyPlayerName, validateTournamentPlayerMapObj} = require('./utility/validators');
-const {addTournament, createPlayer, deletePlayer, addPlayerToTournament, removePlayerFromTournament, getTournamentsAccParams, getPlayersAccParams} = require('./service/tournament');
+const {validateTournament, validatePlayer, verifyPlayerName,
+         validateTournamentPlayerMapObj, validatePlayerScoreObj
+    } = require('./utility/validators');
+const {addTournament, createPlayer, deletePlayer, 
+        addPlayerToTournament, removePlayerFromTournament,
+        getTournamentsAccParams, getPlayersAccParams, updatePlayerScore
+    } = require('./service/tournament');
 const {errHandler} = require('./service/errorHandler');
 
 const app = express();
@@ -96,6 +101,18 @@ app.post('/removePlayer', (req, res)=>{
             throw new APIException(400, res)
         }
     }, res)
+});
+
+app.put('/updatePlayerScore', (req, res)=>{
+    errHandler(()=>{
+        if(validatePlayerScoreObj(req.body)){
+            updatePlayerScore(req, res, tournaments, players);
+            res.statusCode = 200;
+            res.send({'message': 'Player Score Updated Successfully'});
+        } else {
+            throw new APIException(400, res);
+        }
+    });
 });
 
 function clearTournaments() {

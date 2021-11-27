@@ -73,6 +73,13 @@ function validateTournamentPlayerMapObj(jsonStr){
     )
 }
 
+function validatePlayerScoreObj(jsonStr){
+    return Object.keys(jsonStr).length == 2
+    && (jsonStr.hasOwnProperty('score') && !isNaN(jsonStr['score']))
+    && (jsonStr.hasOwnProperty('player') && verifyPlayerName(jsonStr.player)
+    )
+}
+
 function verifyPlayerName(jsonStr){
     return Object.keys(jsonStr).length == 2
     && ( jsonStr.hasOwnProperty('lastname') 
@@ -81,10 +88,10 @@ function verifyPlayerName(jsonStr){
         && typeof(jsonStr['firstinitial']) === 'string' && jsonStr['firstinitial'].trim().length === 1)
 }
 
-
 exports.validateQParamsForGetTournament = validateQParamsForGetTournament;
 exports.validateQParamsForGetPlayer = validateQParamsForGetPlayer;
 exports.validateTournament = validateTournament;
 exports.validatePlayer = validatePlayer;
 exports.verifyPlayerName = verifyPlayerName;
 exports.validateTournamentPlayerMapObj = validateTournamentPlayerMapObj;
+exports.validatePlayerScoreObj = validatePlayerScoreObj;
