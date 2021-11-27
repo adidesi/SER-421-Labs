@@ -1,1 +1,9 @@
 <p>landing-page works!</p>
+<div>
+    <span>Filter by Year</span>
+    <span><input type="text" name="tournamentByYear" id="tournamentByYear"></span>
+    <span><button (click)="filterByYear()">Filter</button></span>
+</div>
+<div>
+    <tournament-box *ngFor="let tournament of tournaments"></tournament-box>
+</div>
