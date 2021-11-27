@@ -1,8 +1,8 @@
 const express = require('express');
 
 const {APIException} = require('./model/APIException');
-const {validateTournament, validatePlayer, validateTournamentPlayerMapObj} = require('./utility/validators');
-const {addTournament, createPlayer, addPlayerToTournament, removePlayerFromTournament, getTournamentsAccParams, getPlayersAccParams} = require('./service/tournament');
+const {validateTournament, validatePlayer, verifyPlayerName, validateTournamentPlayerMapObj} = require('./utility/validators');
+const {addTournament, createPlayer, deletePlayer, addPlayerToTournament, removePlayerFromTournament, getTournamentsAccParams, getPlayersAccParams} = require('./service/tournament');
 const {errHandler} = require('./service/errorHandler');
 
 const app = express();
@@ -61,6 +61,18 @@ app.get('/player', (req, res)=>{
         res.send(playersRespObj);
     }, res)
 });
+
+app.delete('/player', (req, res)=>{
+    errHandler(()=>{
+        if(req.body.hasOwnProperty('player') && verifyPlayerName(req.body.player)){
+            deletePlayer(req.body.player, res, players);
+            res.statusCode = 200;
+            res.send({'message': 'Player Deleted Successfully'});
+        } else {
+            throw new APIException(400, res);
+        }
+    }, res);
+})
 
 app.post('/addPlayer', (req, res)=>{
     errHandler(()=>{

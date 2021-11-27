@@ -69,12 +69,16 @@ function validateTournamentPlayerMapObj(jsonStr){
     return Object.keys(jsonStr).length == 2
     && (jsonStr.hasOwnProperty('tournament') 
         && typeof(jsonStr['tournament']) === 'string' && jsonStr['tournament'].trim().length > 0)
-    && (jsonStr.hasOwnProperty('player') && Object.keys(jsonStr.player).length == 2
-        && ( jsonStr.player.hasOwnProperty('lastname') 
-            && typeof(jsonStr.player['lastname']) === 'string' && jsonStr.player['lastname'].trim().length > 0)
-        && ( jsonStr.player.hasOwnProperty('firstinitial') 
-            && typeof(jsonStr.player['firstinitial']) === 'string' && jsonStr.player['firstinitial'].trim().length === 1)
+    && (jsonStr.hasOwnProperty('player') && verifyPlayerName(jsonStr.player)
     )
+}
+
+function verifyPlayerName(jsonStr){
+    return Object.keys(jsonStr).length == 2
+    && ( jsonStr.hasOwnProperty('lastname') 
+        && typeof(jsonStr['lastname']) === 'string' && jsonStr['lastname'].trim().length > 0)
+    && ( jsonStr.hasOwnProperty('firstinitial') 
+        && typeof(jsonStr['firstinitial']) === 'string' && jsonStr['firstinitial'].trim().length === 1)
 }
 
 
@@ -82,4 +86,5 @@ exports.validateQParamsForGetTournament = validateQParamsForGetTournament;
 exports.validateQParamsForGetPlayer = validateQParamsForGetPlayer;
 exports.validateTournament = validateTournament;
 exports.validatePlayer = validatePlayer;
+exports.verifyPlayerName = verifyPlayerName;
 exports.validateTournamentPlayerMapObj = validateTournamentPlayerMapObj;

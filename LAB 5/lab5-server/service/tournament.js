@@ -43,6 +43,19 @@ function createPlayer(newPlayer, response, players, tournamentName = undefined){
     }
 }
 
+function deletePlayer(newPlayer, response, players){
+    let playerIndex = players.findIndex(player => {
+        return player.lastname === newPlayer.lastname
+                && player.firstinitial	=== newPlayer.firstinitial;
+    });
+    if(playerIndex === -1) {
+        throw new APIException(422, response, 'Player with given name doesn\'t exist');
+    } else if (players[playerIndex].tournamentName){
+        throw new APIException(422, response, 'Player is already associated with some tournament');
+    }
+    players.splice(playerIndex, 1);
+}
+
 function updatePlayerTournamentMap(req, res, tournaments, players, operation){
     let tournamentIndex = tournaments.findIndex(tournament => tournament.name === req.body.tournament);
     let playerIndex = players.findIndex(player => {
@@ -110,5 +123,6 @@ exports.addTournament = addTournament;
 exports.addPlayerToTournament = addPlayerToTournament;
 exports.removePlayerFromTournament = removePlayerFromTournament;
 exports.createPlayer = createPlayer;
+exports.deletePlayer = deletePlayer;
 exports.getTournamentsAccParams = getTournamentsAccParams;
 exports.getPlayersAccParams = getPlayersAccParams
