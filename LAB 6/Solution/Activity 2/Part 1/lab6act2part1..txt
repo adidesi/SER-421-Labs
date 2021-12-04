@@ -1,0 +1,21 @@
+SER 421 Lab 6 Activity 2 Part 1
+
+1. phoenix.craiglist.org
+The site is adaptive in nature.
+When the dimensions of the browser after loading are changed, the site doesn’t have any changes in look and feel. However, when the dimensions are modified and the site is loaded, the server takes in considerations the device dimensions and loads data accordingly. Example different layout for mobile and desktop devices
+
+2. discord.com
+The site is responsive in nature. 
+As the device width changes, the website takes into consideration that smaller screens must be smaller devices and changes the content displayed on the screen.
+
+3. winstockfestival.com
+The site is built with Fluid principle of layout.
+There is no change in content restructuring, or layout of information on screen. The site only shrinks/enlarges in width, as the width of the device keeps changing.The content is made compact horizontally and not moved vertically or structurally changed. Such behavior is found in fluid layout websites
+
+4. homedepot.com
+The site is responsive in nature. 
+As the device width changes, the website takes into consideration that smaller screens must be smaller devices and changes the content displayed on the screen. When the device is rotated from portrait to landscape and thus increasing the width, the website changes layout. However, the site doesn’t only shrink like it does in fluid behavior
+
+5. lowes.com
+The site is responsive in nature. 
+As the device width changes, the website takes into consideration that smaller screens must be smaller devices and changes the content displayed on the screen. When the device is rotated from portrait to landscape and thus increasing the width, the website changes layout. However, the site doesn’t only shrink like it does in fluid behavior
